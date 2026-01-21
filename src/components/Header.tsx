@@ -42,8 +42,8 @@ const Header = () => {
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            <Button className="font-semibold shadow-soft hover:shadow-elegant transition-all duration-300">
-              Agenda una llamada
+            <Button asChild className="font-semibold shadow-soft hover:shadow-elegant transition-all duration-300">
+              <a href="#contact">Agenda una llamada</a>
             </Button>
           </div>
 
@@ -72,8 +72,8 @@ const Header = () => {
                 {link.name}
               </a>
             ))}
-            <Button className="w-full font-semibold mt-2">
-              Agenda una llamada
+            <Button asChild className="w-full font-semibold mt-2">
+              <a href="#contact" onClick={() => setIsMenuOpen(false)}>Agenda una llamada</a>
             </Button>
           </div>
         </div>

@@ -25,7 +25,7 @@ const advantages = [
 
 export const WhyChooseUs = () => {
   return (
-    <section className="py-20 bg-primary text-primary-foreground">
+    <section id="about" className="py-20 bg-primary text-primary-foreground">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
@@ -38,14 +38,14 @@ export const WhyChooseUs = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
           {advantages.map((advantage, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="text-center group hover:-translate-y-2 transition-smooth"
             >
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary-foreground/10 mb-4 group-hover:bg-primary-foreground/20 transition-smooth">
                 <advantage.icon className="h-10 w-10 text-primary-foreground" />
               </div>
-              
+
               <h3 className="text-xl font-semibold mb-3">
                 {advantage.title}
               </h3>

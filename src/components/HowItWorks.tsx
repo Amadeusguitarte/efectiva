@@ -29,7 +29,7 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section className="py-20 bg-background">
+    <section id="how-it-works" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">
@@ -48,16 +48,16 @@ export const HowItWorks = () => {
                 {index < steps.length - 1 && (
                   <div className="hidden lg:block absolute top-16 left-1/2 w-full h-0.5 bg-primary/20 z-0" />
                 )}
-                
+
                 <div className="relative z-10 text-center">
                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary text-primary-foreground text-2xl font-bold mb-4 shadow-elegant">
                     {step.number}
                   </div>
-                  
+
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
                     <step.icon className="h-6 w-6 text-primary" />
                   </div>
-                  
+
                   <h3 className="text-xl font-semibold mb-3 text-foreground">
                     {step.title}
                   </h3>

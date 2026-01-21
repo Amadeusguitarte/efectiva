@@ -25,7 +25,7 @@ const services = [
 
 export const Services = () => {
   return (
-    <section className="py-20 bg-background">
+    <section id="services" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">
@@ -38,8 +38,8 @@ export const Services = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {services.map((service, index) => (
-            <Card 
-              key={index} 
+            <Card
+              key={index}
               className="p-8 hover:shadow-elegant transition-smooth hover:-translate-y-1 bg-card border-border shadow-soft flex flex-col"
             >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
@@ -63,7 +63,7 @@ export const Services = () => {
                 ))}
               </ul>
 
-              <Button 
+              <Button
                 className="w-full"
                 onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
               >
