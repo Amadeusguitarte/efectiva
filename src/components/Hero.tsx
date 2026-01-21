@@ -7,9 +7,9 @@ export const Hero = () => {
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background Image - Netflix Style */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={heroImage} 
-          alt="Libertad financiera con Insolvencia Efectiva" 
+        <img
+          src={heroImage}
+          alt="Libertad financiera con Insolvencia Efectiva"
           className="w-full h-full object-cover"
         />
         {/* Dark gradient overlay for text readability */}
@@ -23,29 +23,22 @@ export const Hero = () => {
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700 drop-shadow-2xl">
             Recupera Tu Libertad Financiera
           </h1>
-          
+
           <p className="text-xl md:text-2xl mb-8 text-white drop-shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 max-w-xl">
             Con más de <strong>16 años de experiencia</strong>, ayudamos a personas y pequeñas empresas a solucionar sus deudas legalmente con la Ley de Insolvencia
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="w-full sm:w-auto text-lg bg-primary hover:bg-primary/90 shadow-2xl"
               onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
             >
               <Phone className="mr-2 h-5 w-5" />
               Agendar una llamada gratuita
             </Button>
-            
-            <Button 
-              size="lg" 
-              className="w-full sm:w-auto text-lg bg-white/20 text-white border-2 border-white/60 hover:bg-white hover:text-foreground backdrop-blur-md"
-              onClick={() => window.open('https://wa.me/573001234567?text=Hola%2C%20necesito%20información%20sobre%20la%20Ley%20de%20Insolvencia', '_blank')}
-            >
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Hablar por WhatsApp
-            </Button>
+
+
           </div>
 
           <div className="mt-10 flex items-center gap-8 text-sm text-white/90 animate-in fade-in duration-700 delay-500">
