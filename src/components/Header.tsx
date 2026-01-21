@@ -15,7 +15,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-transparent transition-all duration-300">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-black/50 backdrop-blur-md border-b border-white/10 transition-all duration-300">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
@@ -29,7 +29,7 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20">
+          <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <a
                 key={link.name}
