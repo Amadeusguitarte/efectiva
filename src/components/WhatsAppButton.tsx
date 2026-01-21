@@ -1,7 +1,7 @@
 
 export const WhatsAppButton = () => {
   const handleWhatsAppClick = () => {
-    const phoneNumber = "573001234567"; // Colombian WhatsApp number
+    const phoneNumber = "573195420600"; // Colombian WhatsApp number
     const message = encodeURIComponent("Hola, necesito información sobre la Ley de Insolvencia");
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
