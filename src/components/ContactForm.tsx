@@ -1,36 +1,8 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { InlineWidget } from "react-calendly";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Phone, Mail, MapPin, Award, CalendarCheck } from "lucide-react";
 
 export const ContactForm = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: ""
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.phone) {
-      toast.error("Por favor completa todos los campos obligatorios");
-      return;
-    }
-
-    // Here you would typically send the data to your backend
-    console.log("Form submitted:", formData);
-    toast.success("¡Mensaje enviado! Te contactaremos pronto.");
-    
-    // Reset form
-    setFormData({ name: "", email: "", phone: "", message: "" });
-  };
-
   return (
     <section id="contact" className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -39,135 +11,98 @@ export const ContactForm = () => {
             Agenda Tu Consulta Gratuita
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Déjanos tus datos y un experto te contactará para analizar tu caso sin compromiso
+            Elige el horario que mejor te convenga y recibe asesoría experta de inmediato.
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Info */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-2xl font-semibold mb-6 text-foreground">
-                Información de Contacto
-              </h3>
-              
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Teléfono</p>
-                    <p className="text-muted-foreground">+57 300 123 4567</p>
-                    <p className="text-muted-foreground">+57 601 234 5678</p>
-                  </div>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+          {/* Left Column: Advisor Profile & Info */}
+          <div className="lg:col-span-4 space-y-8">
+            <Card className="p-6 border-primary/20 bg-card shadow-elegant overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-full h-24 bg-gradient-hero opacity-20" />
+
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className="w-32 h-32 rounded-full border-4 border-background shadow-xl mb-4 overflow-hidden">
+                  <img
+                    src="/juan-hernandez.png"
+                    alt="Juan Hernandez"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Mail className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Email</p>
-                    <p className="text-muted-foreground">info@insolvenciaefectiva.com</p>
-                    <p className="text-muted-foreground">consultas@insolvenciaefectiva.com</p>
-                  </div>
+                <h3 className="text-2xl font-bold text-foreground">Juan Hernandez</h3>
+                <p className="text-primary font-medium mb-4">Representante Insolvencia Efectiva</p>
+
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-4 py-2 rounded-full mb-6">
+                  <Award className="w-4 h-4 text-primary" />
+                  <span>Experto en Ley de Insolvencia</span>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="h-5 w-5 text-primary" />
+                <div className="w-full space-y-4 text-left border-t pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Phone className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Llámanos</p>
+                      <p className="font-semibold text-foreground">+57 300 123 4567</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Dirección</p>
-                    <p className="text-muted-foreground">Calle 72 #10-51, Oficina 501</p>
-                    <p className="text-muted-foreground">Bogotá, Colombia</p>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Mail className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Escríbenos</p>
+                      <p className="font-semibold text-foreground text-sm">insolvenciaefectivacolombia@gmail.com</p>
+                    </div>
                   </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Visítanos</p>
+                      <p className="font-semibold text-foreground text-sm">Calle 72 #10-51, Of. 501, Bogotá</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
+              <div className="flex items-start gap-4">
+                <CalendarCheck className="w-8 h-8 text-primary flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-foreground mb-1">¿Qué pasará en la cita?</h4>
+                  <p className="text-sm text-muted-foreground">Analizaremos tus deudas y te diremos exactamente cuánto podrías ahorrarte con la ley.</p>
                 </div>
               </div>
             </div>
-
-            <Card className="p-6 bg-primary/5 border-primary/20">
-              <p className="text-sm text-foreground">
-                <strong>Horario de Atención:</strong><br />
-                Lunes a Viernes: 8:00 AM - 6:00 PM<br />
-                Sábados: 9:00 AM - 1:00 PM
-              </p>
-            </Card>
           </div>
 
-          {/* Contact Form */}
-          <Card className="p-8 shadow-elegant">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                  Nombre Completo *
-                </label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Tu nombre completo"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                  Correo Electrónico *
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
-                  Teléfono / WhatsApp *
-                </label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+57 300 123 4567"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-                  Cuéntanos brevemente tu situación
-                </label>
-                <Textarea
-                  id="message"
-                  placeholder="Describe tu situación financiera actual..."
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  rows={4}
-                  className="w-full resize-none"
-                />
-              </div>
-
-              <Button type="submit" size="lg" className="w-full">
-                <Send className="mr-2 h-5 w-5" />
-                Enviar Solicitud
-              </Button>
-
-              <p className="text-xs text-muted-foreground text-center">
-                Al enviar este formulario aceptas que te contactemos para brindarte asesoría
-              </p>
-            </form>
-          </Card>
+          {/* Right Column: Calendly Widget */}
+          <div className="lg:col-span-8 bg-card rounded-2xl shadow-soft border border-border p-4 min-h-[600px]">
+            {/* 
+              IMPORTANT: Replace the 'url' below with your actual Calendly URL 
+              Example: https://calendly.com/tu-usuario/asesoria-gratuita
+            */}
+            <InlineWidget
+              url="https://calendly.com/insolvenciaefectivacolombia"
+              styles={{
+                height: '100%',
+                minHeight: '650px',
+                width: '100%'
+              }}
+              prefill={{
+                email: 'insolvenciaefectivacolombia@gmail.com',
+                name: 'Cliente Insolvencia'
+              }}
+            />
+          </div>
         </div>
       </div>
     </section>
