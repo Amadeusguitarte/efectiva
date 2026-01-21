@@ -91,7 +91,7 @@ export const ContactForm = () => {
               Example: https://calendly.com/tu-usuario/asesoria-gratuita
             */}
             <InlineWidget
-              url="https://calendly.com/insolvenciaefectivacolombia"
+              url="https://calendly.com/insolvenciaefectivacolombia/30min"
               styles={{
                 height: '100%',
                 minHeight: '650px',
