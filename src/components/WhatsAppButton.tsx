@@ -1,5 +1,3 @@
-import { MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export const WhatsAppButton = () => {
   const handleWhatsAppClick = () => {
@@ -9,13 +7,18 @@ export const WhatsAppButton = () => {
   };
 
   return (
-    <Button
+    <div
       onClick={handleWhatsAppClick}
-      size="icon"
-      className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 z-50 bg-[#25D366] p-0 overflow-hidden flex items-center justify-center border-2 border-white"
+      className="fixed bottom-6 right-6 z-50 cursor-pointer hover:scale-110 transition-transform duration-300 drop-shadow-2xl"
       aria-label="Contactar por WhatsApp"
+      role="button"
+      tabIndex={0}
     >
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" className="h-full w-full object-cover" />
-    </Button>
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+        alt="WhatsApp"
+        className="h-16 w-16 filter drop-shadow-md"
+      />
+    </div>
   );
 };
