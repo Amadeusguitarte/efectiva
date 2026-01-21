@@ -34,7 +34,14 @@ const Header = () => {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium text-white hover:text-white/80 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const element = document.querySelector(link.href);
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="text-sm font-medium text-white hover:text-white/80 transition-colors cursor-pointer"
               >
                 {link.name}
               </a>
@@ -42,8 +49,16 @@ const Header = () => {
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            <Button asChild className="font-semibold shadow-soft hover:shadow-elegant transition-all duration-300">
-              <a href="#contact">Agenda una llamada</a>
+            <Button
+              className="font-semibold shadow-soft hover:shadow-elegant transition-all duration-300"
+              onClick={() => {
+                const element = document.querySelector("#contact");
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            >
+              Agenda una llamada
             </Button>
           </div>
 
@@ -66,14 +81,30 @@ const Header = () => {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-base font-medium text-foreground hover:text-primary py-2"
-                onClick={() => setIsMenuOpen(false)}
+                className="text-base font-medium text-foreground hover:text-primary py-2 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsMenuOpen(false);
+                  const element = document.querySelector(link.href);
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
               >
                 {link.name}
               </a>
             ))}
-            <Button asChild className="w-full font-semibold mt-2">
-              <a href="#contact" onClick={() => setIsMenuOpen(false)}>Agenda una llamada</a>
+            <Button
+              className="w-full font-semibold mt-2"
+              onClick={() => {
+                setIsMenuOpen(false);
+                const element = document.querySelector("#contact");
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            >
+              Agenda una llamada
             </Button>
           </div>
         </div>
