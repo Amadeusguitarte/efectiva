@@ -48,11 +48,11 @@ export const Hero = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-              <span className="font-medium">Consulta Gratis</span>
+              <span className="font-medium">Consulta gratuita</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-              <span className="font-medium">16 Años de Experiencia</span>
+              <span className="font-medium">Más de 16 años de experiencia</span>
             </div>
           </div>
         </div>
