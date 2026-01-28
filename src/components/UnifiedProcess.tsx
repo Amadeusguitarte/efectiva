@@ -73,50 +73,43 @@ export const UnifiedProcess = () => {
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
 
                     {/* Left Column - Sticky Context */}
-                    <div className="lg:w-[40%] lg:sticky lg:top-36 space-y-8 mb-12 lg:mb-0">
+                    <div className="lg:w-[45%] lg:sticky lg:top-40 self-start space-y-10 mb-12 lg:mb-0">
                         <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-extrabold uppercase tracking-widest">
-                                <CheckCircle2 className="h-4 w-4" />
-                                <span>Nuestra Ruta</span>
-                            </div>
-                            <h2 className="text-4xl md:text-6xl font-black text-foreground leading-[1.05] tracking-tight">
-                                Tu Salud Financiera, <br className="hidden md:block" />
-                                <span className="text-primary">Nuestra Prioridad</span>
+                            <h2 className="text-3xl md:text-5xl font-black text-primary leading-[1.1] tracking-tight uppercase">
+                                ¿CÓMO FUNCIONA EL PROCESO DE INSOLVENCIA CON NOSOTROS?
                             </h2>
                         </div>
 
-                        <div className="space-y-6 max-w-md">
-                            <p className="text-xl text-muted-foreground leading-relaxed">
-                                Acompañamos a personas y empresas a través de la <strong>Ley de Insolvencia</strong> para que vuelvan a respirar tranquilos.
-                            </p>
+                        <div className="space-y-8 max-w-xl">
+                            <div className="space-y-6 bg-white/50 backdrop-blur-sm p-8 rounded-3xl border border-white shadow-soft">
+                                <p className="text-lg md:text-xl font-medium text-primary/80">
+                                    Acógete a la Ley de Insolvencia (Ley 1564 de 2012 – Insolvencia de Persona Natural)
+                                </p>
 
-                            <ul className="space-y-4">
-                                {[
-                                    "Procesos 100% legales y transparentes.",
-                                    "Detención inmediata de cobros y embargos.",
-                                    "Acompañamiento por expertos hasta el final."
-                                ].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 text-foreground/80 font-bold">
-                                        <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
-                                            <div className="h-2 w-2 rounded-full bg-primary" />
-                                        </div>
-                                        {item}
-                                    </li>
-                                ))}
-                            </ul>
+                                <p className="text-xl text-foreground/90 leading-relaxed">
+                                    Cuando las deudas se acumulan y ya no es posible ponerse al día, <strong className="font-black text-foreground">la ley colombiana ofrece una salida legal, ordenada y definitiva</strong> para recuperar el control financiero.
+                                </p>
 
-                            <div className="pt-6">
+                                <p className="text-lg text-foreground/80 leading-relaxed">
+                                    En <strong className="text-primary font-bold">Insolvencia Efectiva</strong> utilizamos el régimen de insolvencia de persona natural para ayudarte a <strong className="font-bold">detener cobros, suspender embargos y reorganizar tus obligaciones</strong> bajo condiciones reales y justas.
+                                </p>
+
+                                <p className="text-lg text-foreground/80 leading-relaxed border-l-4 border-primary pl-6 py-2 italic bg-primary/5 rounded-r-xl">
+                                    Este no es un atajo ni una promesa vacía: es un <strong className="font-bold">proceso legal respaldado por la ley</strong>, diseñado para personas que necesitan empezar de nuevo.
+                                </p>
+                            </div>
+
+                            <div className="pt-4 flex flex-col sm:flex-row gap-4">
                                 <button
                                     onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
-                                    className="px-8 py-4 bg-primary text-white font-black text-lg rounded-2xl shadow-elegant hover:scale-105 transition-all flex items-center gap-3 group"
+                                    className="px-8 py-5 bg-primary text-white font-black text-lg rounded-2xl shadow-elegant hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 group"
                                 >
-                                    Agendar Cita
+                                    Agendar asesoría ahora
                                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-2" />
                                 </button>
                             </div>
                         </div>
                     </div>
-
                     {/* Right Column - Scrollable Cards + Progress Indicator */}
                     <div className="lg:w-[60%] flex gap-6 md:gap-12">
 
@@ -193,8 +186,8 @@ export const UnifiedProcess = () => {
                                             {/* Step Indicator Dot */}
                                             <div
                                                 className={`w-4 h-4 rounded-full border-2 transition-all duration-500 shadow-sm ${activeStep === index
-                                                        ? "bg-primary border-primary scale-150 shadow-primary/30"
-                                                        : "bg-white border-primary/40 scale-100"
+                                                    ? "bg-primary border-primary scale-150 shadow-primary/30"
+                                                    : "bg-white border-primary/40 scale-100"
                                                     }`}
                                             />
 
