@@ -19,9 +19,11 @@ export const HowItWorks = () => {
             <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground leading-tight">
               ¿Cómo funciona el proceso de insolvencia con nosotros?
             </h2>
-            <h3 className="text-xl md:text-2xl font-semibold mb-8 text-foreground/80 leading-relaxed border-l-4 border-primary pl-4 inline-block text-left">
-              Acógete a la Ley de Insolvencia (Ley 1564 de 2012 – Insolvencia de Persona Natural)
-            </h3>
+            <div className="bg-white p-6 rounded-2xl shadow-soft border border-border/50 inline-block text-left mb-8">
+              <h3 className="text-xl md:text-2xl font-semibold text-foreground/80 leading-relaxed border-l-4 border-primary pl-4">
+                Acógete a la Ley de Insolvencia (Ley 1564 de 2012 – Insolvencia de Persona Natural)
+              </h3>
+            </div>
           </div>
 
           <div className="space-y-6 text-lg md:text-xl text-muted-foreground leading-relaxed">
