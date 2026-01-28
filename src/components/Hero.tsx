@@ -4,7 +4,7 @@ import heroImage from "@/assets/hero-image.jpg";
 
 export const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
+    <section className="relative min-h-[80vh] flex items-center overflow-hidden">
       {/* Background Image - Netflix Style */}
       <div className="absolute inset-0 z-0">
         <img
