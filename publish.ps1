@@ -2,6 +2,12 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "🚀 Iniciando proceso de publicación segura..." -ForegroundColor Green
 
+# 0. Asegurar Entry Point (index.html de desarrollo)
+if (Test-Path "index.dev.html") {
+    Write-Host "🛠️ Restaurando index.html de desarrollo..." -ForegroundColor Cyan
+    Copy-Item "index.dev.html" "index.html" -Force
+}
+
 # 1. Construir el proyecto (Genera carpeta dist)
 Write-Host "📦 Compilando proyecto..." -ForegroundColor Cyan
 Remove-Item -Path "dist" -Recurse -Force -ErrorAction SilentlyContinue
