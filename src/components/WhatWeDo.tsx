@@ -27,7 +27,7 @@ const benefits = [
 
 export const WhatWeDo = () => {
   return (
-    <section className="py-20 gradient-subtle relative overflow-hidden">
+    <section className="py-20 bg-[#f8f9fc] relative overflow-hidden border-b border-border/50">
       {/* Background Pattern with low opacity */}
       <div className="absolute inset-0 z-0">
         <img

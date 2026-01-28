@@ -1,7 +1,16 @@
 export const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="py-20 gradient-subtle relative overflow-hidden">
-      <div className="container mx-auto px-4">
+    <section id="how-it-works" className="py-20 bg-[#f8f9fc] relative overflow-hidden">
+      {/* Background Pattern with low opacity */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={patternBg}
+          alt=""
+          className="w-full h-full object-cover opacity-5"
+        />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground leading-tight">
