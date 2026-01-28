@@ -22,10 +22,12 @@ Remove-Item -Path "index.html" -Force -ErrorAction SilentlyContinue
 # 3. Trasplante (Dist -> Raíz)
 Write-Host "🌱 Trasplantando archivos a producción..." -ForegroundColor Cyan
 Copy-Item -Path "dist/index.html" -Destination "index.html" -Force
-Copy-Item -Path "dist/assets" -Destination "assets" -Recurse -Force
+if (-not (Test-Path "assets")) { New-Item -ItemType Directory -Path "assets" | Out-Null }
+Copy-Item -Path "dist/assets/*" -Destination "assets" -Recurse -Force
 # Asegurar que los assets estáticos críticos también se copien
 if (Test-Path "dist/logo.png") { Copy-Item "dist/logo.png" "logo.png" -Force }
 if (Test-Path "dist/favicon.ico") { Copy-Item "dist/favicon.ico" "favicon.ico" -Force }
+if (Test-Path "public/brand-icon.png") { Copy-Item "public/brand-icon.png" "brand-icon.png" -Force }
 if (Test-Path "dist/CNAME") { Copy-Item "dist/CNAME" "CNAME" -Force }
 
 # 4. Git Push
