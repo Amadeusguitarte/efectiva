@@ -1,13 +1,13 @@
 export const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="py-20 bg-background relative overflow-hidden">
+    <section id="how-it-works" className="py-20 gradient-subtle relative overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center md:text-left mb-12">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-primary leading-tight uppercase">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground leading-tight">
               ¿Cómo funciona el proceso de insolvencia con nosotros?
             </h2>
-            <h3 className="text-xl md:text-2xl font-semibold mb-8 text-foreground/80 leading-relaxed border-l-4 border-primary pl-4">
+            <h3 className="text-xl md:text-2xl font-semibold mb-8 text-foreground/80 leading-relaxed border-l-4 border-primary pl-4 inline-block text-left">
               Acógete a la Ley de Insolvencia (Ley 1564 de 2012 – Insolvencia de Persona Natural)
             </h3>
           </div>
