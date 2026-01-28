@@ -4,13 +4,13 @@ import heroImage from "@/assets/hero-image.jpg";
 
 export const Hero = () => {
   return (
-    <section className="relative min-h-[80vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[85vh] flex items-start pt-32 md:pt-44 overflow-hidden">
       {/* Background Image - Netflix Style */}
       <div className="absolute inset-0 z-0">
         <img
           src={heroImage}
           alt="Libertad financiera con Insolvencia Efectiva"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
         />
         {/* Dark gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
