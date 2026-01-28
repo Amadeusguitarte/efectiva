@@ -25,7 +25,7 @@ export const Hero = () => {
           </h1>
 
           <p className="text-lg md:text-xl mb-8 text-white/95 drop-shadow-md animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 max-w-3xl font-light leading-relaxed tracking-wide">
-            Con más de 16 años de experiencia, ayudamos a personas naturales y pequeños empresarios a resolver sus deudas de forma <strong>legal, ordenada y definitiva</strong>, a través de la Ley de Insolvencia en Colombia.
+            Con más de 16 años de experiencia, ayudamos a personas naturales y pequeños empresarios a resolver sus deudas de forma <strong className="font-extrabold text-white">legal, ordenada y definitiva</strong>, a través de la Ley de Insolvencia en Colombia.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
