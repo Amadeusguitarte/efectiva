@@ -21,11 +21,11 @@ export const Hero = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-2xl text-white">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700 drop-shadow-2xl">
-            Recupera tu libertad financiera
+            Recupera Tu Libertad Financiera
           </h1>
 
           <p className="text-xl md:text-2xl mb-8 text-white drop-shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 max-w-xl">
-            Con más de 16 años de experiencia, ayudamos a personas naturales y pequeños empresarios a resolver sus deudas de forma <strong>legal, ordenada y definitiva</strong>, a través de la Ley de Insolvencia en Colombia.
+            Con más de <strong>16 años de experiencia</strong>, ayudamos a personas y pequeñas empresas a solucionar sus deudas legalmente con la Ley de Insolvencia
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
@@ -48,11 +48,11 @@ export const Hero = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-              <span className="font-medium">Consulta gratuita</span>
+              <span className="font-medium">Consulta Gratis</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-              <span className="font-medium">Más de 16 años de experiencia</span>
+              <span className="font-medium">16 Años de Experiencia</span>
             </div>
           </div>
         </div>
