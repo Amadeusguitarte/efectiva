@@ -1,72 +1,29 @@
-import { Calendar, Search, FileText, Heart } from "lucide-react";
-
-const steps = [
-  {
-    number: "01",
-    icon: Calendar,
-    title: "Agenda tu consulta gratis",
-    description: "Conversamos sobre tu situación financiera sin ningún compromiso"
-  },
-  {
-    number: "02",
-    icon: Search,
-    title: "Analizamos tu caso",
-    description: "Evaluamos tu situación y determinamos la mejor estrategia legal"
-  },
-  {
-    number: "03",
-    icon: FileText,
-    title: "Iniciamos el proceso",
-    description: "Radicamos tu proceso de insolvencia ante las autoridades competentes"
-  },
-  {
-    number: "04",
-    icon: Heart,
-    title: "Recuperas tu tranquilidad",
-    description: "Vives libre de presiones mientras cumples tu plan de pago acordado"
-  }
-];
-
 export const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="py-20 bg-background">
+    <section id="how-it-works" className="py-20 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">
-            ¿Cómo Funciona?
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Un proceso simple y transparente en 4 pasos
-          </p>
-        </div>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center md:text-left mb-12">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-primary leading-tight uppercase">
+              ¿Cómo funciona el proceso de insolvencia con nosotros?
+            </h2>
+            <h3 className="text-xl md:text-2xl font-semibold mb-8 text-foreground/80 leading-relaxed border-l-4 border-primary pl-4">
+              Acógete a la Ley de Insolvencia (Ley 1564 de 2012 – Insolvencia de Persona Natural)
+            </h3>
+          </div>
 
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <div key={index} className="relative">
-                {/* Connector Line - Hidden on last item */}
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-16 left-1/2 w-full h-0.5 bg-primary/20 z-0" />
-                )}
+          <div className="space-y-6 text-lg md:text-xl text-muted-foreground leading-relaxed">
+            <p>
+              Cuando las deudas se acumulan y ya no es posible ponerse al día, <strong className="font-extrabold text-foreground">la ley colombiana ofrece una salida legal, ordenada y definitiva</strong> para recuperar el control financiero.
+            </p>
 
-                <div className="relative z-10 text-center">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary text-primary-foreground text-2xl font-bold mb-4 shadow-elegant">
-                    {step.number}
-                  </div>
+            <p>
+              En <strong className="font-extrabold text-foreground">Insolvencia Efectiva</strong> utilizamos el régimen de insolvencia de persona natural para ayudarte a <strong className="font-extrabold text-foreground">detener cobros, suspender embargos y reorganizar tus obligaciones</strong> bajo condiciones reales y justas.
+            </p>
 
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
-                    <step.icon className="h-6 w-6 text-primary" />
-                  </div>
-
-                  <h3 className="text-xl font-semibold mb-3 text-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
+            <p>
+              Este no es un atajo ni una promesa vacía: es un <strong className="font-extrabold text-foreground">proceso legal respaldado por la ley</strong>, diseñado para personas que necesitan empezar de nuevo.
+            </p>
           </div>
         </div>
       </div>
