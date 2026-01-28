@@ -1,3 +1,6 @@
+import { Calendar, Search, FileText, Heart } from "lucide-react";
+import patternBg from "@/assets/pattern-bg.jpg";
+
 export const HowItWorks = () => {
   return (
     <section id="how-it-works" className="py-20 bg-[#f8f9fc] relative overflow-hidden">
