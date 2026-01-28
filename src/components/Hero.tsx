@@ -24,7 +24,7 @@ export const Hero = () => {
             Recupera tu libertad financiera
           </h1>
 
-          <p className="text-xl md:text-2xl mb-8 text-white drop-shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 max-w-xl">
+          <p className="text-lg md:text-xl mb-8 text-white/95 drop-shadow-md animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 max-w-3xl font-light leading-relaxed tracking-wide">
             Con más de 16 años de experiencia, ayudamos a personas naturales y pequeños empresarios a resolver sus deudas de forma <strong>legal, ordenada y definitiva</strong>, a través de la Ley de Insolvencia en Colombia.
           </p>
 
