@@ -4,17 +4,17 @@ import heroImage from "@/assets/hero-image-family.png";
 
 export const Hero = () => {
   return (
-    <section className="relative min-h-[75vh] flex items-start pt-32 md:pt-48 overflow-hidden bg-[#7ec8e3]">
+    <section className="relative min-h-[85vh] flex items-start pt-40 md:pt-56 overflow-hidden bg-[#7ec8e3]">
       {/* Background Image - Netflix Style */}
       <div className="absolute inset-0 z-0">
         <img
           src={heroImage}
           alt="Libertad financiera con Insolvencia Efectiva"
-          className="w-full h-full object-cover object-top lg:object-[right_top] scale-105"
+          className="w-full h-full object-cover object-[center_top] lg:object-[right_top]"
         />
         {/* Dark gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
       </div>
 
       {/* Content */}
