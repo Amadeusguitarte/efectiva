@@ -132,9 +132,9 @@ export const UnifiedProcess = () => {
     }, []);
 
     return (
-        <section id="how-it-works" className="py-24 bg-[#f8f9fc] relative">
-            {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
+        <section id="how-it-works" className="py-24 bg-[#f8f9fc] relative overflow-clip">
+            {/* Decorative background elements - No translate-x to avoid overflow */}
+            <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 rounded-full blur-[120px] -translate-y-1/2" />
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
@@ -179,10 +179,10 @@ export const UnifiedProcess = () => {
                     </div>
 
                     {/* Right Column - Scrollable Cards + Progress Indicator */}
-                    <div className="lg:w-[50%] flex gap-4 md:gap-12 ml-auto">
+                    <div className="lg:w-[50%] flex gap-4 md:gap-10 ml-auto flex-nowrap items-start">
 
                         {/* Scrollable Cards Container */}
-                        <div className="flex-grow space-y-20 pb-32">
+                        <div className="flex-grow space-y-20 pb-32 min-w-0">
                             {steps.map((step, index) => (
                                 <div
                                     key={index}
@@ -197,7 +197,7 @@ export const UnifiedProcess = () => {
                                                     <span className="text-primary font-bold italic text-xl">
                                                         {step.number}
                                                     </span>
-                                                    <h3 className="text-xl md:text-2xl font-bold text-primary">
+                                                    <h3 className="text-xl md:text-2xl font-bold text-primary leading-tight">
                                                         {step.title}
                                                     </h3>
                                                 </div>
@@ -217,7 +217,7 @@ export const UnifiedProcess = () => {
                             ))}
 
                             {/* Final Outcome Card */}
-                            <div className="bg-white p-8 md:p-10 rounded-[2rem] shadow-elegant border-2 border-primary/20 space-y-8 text-center">
+                            <div className="bg-white p-8 md:p-10 rounded-[2rem] shadow-elegant border-2 border-primary/20 space-y-8 text-center min-w-0">
                                 <h4 className="text-2xl md:text-3xl font-bold text-foreground">
                                     Tu situación tiene solución
                                 </h4>
