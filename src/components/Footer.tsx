@@ -31,27 +31,62 @@ export const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Enlaces Rápidos</h4>
             <ul className="space-y-2 text-background/80">
               <li>
-                <a href="#beneficios" className="hover:text-background transition-smooth">
+                <a
+                  href="#beneficios"
+                  className="hover:text-background transition-smooth cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('beneficios')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   Beneficios
                 </a>
               </li>
               <li>
-                <a href="#how-it-works" className="hover:text-background transition-smooth">
+                <a
+                  href="#how-it-works"
+                  className="hover:text-background transition-smooth cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   Cómo Funciona
                 </a>
               </li>
               <li>
-                <a href="#elegibilidad" className="hover:text-background transition-smooth">
+                <a
+                  href="#elegibilidad"
+                  className="hover:text-background transition-smooth cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('elegibilidad')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   ¿Quién puede aplicar?
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-background transition-smooth">
+                <a
+                  href="#faq"
+                  className="hover:text-background transition-smooth cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   Preguntas Frecuentes
                 </a>
               </li>
               <li>
-                <a href="#about" className="hover:text-background transition-smooth">
+                <a
+                  href="#about"
+                  className="hover:text-background transition-smooth cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   Nosotros
                 </a>
               </li>

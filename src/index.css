@@ -58,6 +58,11 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
 
+  /* Offset for fixed header when scrolling to IDs */
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
