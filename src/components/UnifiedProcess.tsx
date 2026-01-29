@@ -237,7 +237,7 @@ export const UnifiedProcess = () => {
                                         onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
                                         className="w-full sm:w-auto px-10 py-5 bg-primary text-white text-xl font-bold rounded-2xl shadow-lg hover:shadow-elegant hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto"
                                     >
-                                        👉 Quiero asesoría ahora
+                                        👉 Agendar mi llamada gratuita
                                     </button>
                                 </div>
                             </div>
