@@ -190,7 +190,10 @@ export const UnifiedProcess = () => {
                                     className={`transition-all duration-700 transform ${activeStep === index ? "opacity-100 scale-100" : "opacity-30 scale-95 blur-[1px]"
                                         }`}
                                 >
-                                    <div className="bg-white p-6 md:p-10 rounded-[2rem] shadow-soft border border-border hover:shadow-elegant transition-smooth overflow-hidden">
+                                    <div className={`bg-white p-6 md:p-10 rounded-[2rem] shadow-soft border transition-all duration-500 overflow-hidden ${activeStep === index
+                                            ? "border-primary/40 shadow-elegant ring-4 ring-primary/5"
+                                            : "border-border shadow-soft"
+                                        }`}>
                                         <div className="flex flex-col gap-6">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex items-center gap-4">
@@ -250,8 +253,8 @@ export const UnifiedProcess = () => {
                                         <div key={index} className="relative flex items-center">
                                             <div
                                                 className={`w-4 h-4 rounded-full border-2 transition-all duration-500 shadow-sm ${activeStep === index
-                                                        ? "bg-primary border-primary scale-150 shadow-primary/30"
-                                                        : "bg-white border-primary/40 scale-100"
+                                                    ? "bg-primary border-primary scale-150 shadow-primary/30"
+                                                    : "bg-white border-primary/40 scale-100"
                                                     }`}
                                             />
 
