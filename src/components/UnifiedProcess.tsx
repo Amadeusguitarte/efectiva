@@ -141,7 +141,7 @@ export const UnifiedProcess = () => {
                     {/* Left Column - Full Height Wrapper */}
                     <div className="lg:w-[45%] relative mb-12 lg:mb-0">
                         {/* Sticky Container inside the wrapper */}
-                        <div className="lg:sticky lg:top-36 space-y-8 pb-32">
+                        <div className="lg:sticky lg:top-36 space-y-8 pb-12">
                             <h2 className="text-3xl md:text-5xl font-bold text-foreground leading-tight tracking-tight">
                                 ¿Cómo funciona el proceso de insolvencia con nosotros?
                             </h2>
