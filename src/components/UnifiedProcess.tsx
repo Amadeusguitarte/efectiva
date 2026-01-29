@@ -137,43 +137,45 @@ export const UnifiedProcess = () => {
             <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 rounded-full blur-[120px] -translate-y-1/2" />
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
+                <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
+                    {/* Left Column - Full Height Wrapper */}
+                    <div className="lg:w-[45%] relative mb-12 lg:mb-0">
+                        {/* Sticky Container inside the wrapper */}
+                        <div className="lg:sticky lg:top-36 space-y-8 pb-32">
+                            <h2 className="text-3xl md:text-5xl font-bold text-foreground leading-tight tracking-tight">
+                                ¿Cómo funciona el proceso de insolvencia con nosotros?
+                            </h2>
 
-                    {/* Left Column - Sticky Context */}
-                    <div className="lg:w-[45%] lg:sticky lg:top-32 self-start space-y-8 mb-12 lg:mb-0">
-                        <h2 className="text-3xl md:text-5xl font-bold text-foreground leading-tight tracking-tight">
-                            ¿Cómo funciona el proceso de insolvencia con nosotros?
-                        </h2>
-
-                        <div className="space-y-6">
-                            <div className="space-y-6 bg-white/70 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-border shadow-soft">
-                                <p className="text-lg md:text-xl font-bold text-primary leading-tight">
-                                    Acógete a la Ley de Insolvencia (Ley 1564 de 2012 – Insolvencia de Persona Natural)
-                                </p>
-
-                                <p className="text-lg text-muted-foreground leading-relaxed">
-                                    Cuando las deudas se acumulan y ya no es posible ponerse al día, <strong className="font-bold text-foreground">la ley colombiana ofrece una salida legal, ordenada y definitiva</strong> para recuperar el control financiero.
-                                </p>
-
-                                <p className="text-base text-muted-foreground leading-relaxed">
-                                    En <strong className="font-bold text-foreground">Insolvencia Efectiva</strong> utilizamos el régimen de insolvencia de persona natural para ayudarte a <strong className="font-bold">detener cobros, suspender embargos y reorganizar tus obligaciones</strong> bajo condiciones reales y justas.
-                                </p>
-
-                                <div className="border-l-4 border-primary pl-4 py-1.5 bg-primary/5 rounded-r-xl">
-                                    <p className="text-base text-muted-foreground leading-relaxed italic">
-                                        Este no es un atajo ni una promesa vacía: es un <strong className="font-bold text-foreground">proceso legal respaldado por la ley</strong>, diseñado para personas que necesitan empezar de nuevo.
+                            <div className="space-y-6">
+                                <div className="space-y-6 bg-white/70 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-border shadow-soft">
+                                    <p className="text-lg md:text-xl font-bold text-primary leading-tight">
+                                        Acógete a la Ley de Insolvencia (Ley 1564 de 2012 – Insolvencia de Persona Natural)
                                     </p>
-                                </div>
-                            </div>
 
-                            <div className="pt-2">
-                                <button
-                                    onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
-                                    className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold text-lg rounded-2xl shadow-soft hover:shadow-elegant hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 group"
-                                >
-                                    Quiero asesoría ahora
-                                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-2" />
-                                </button>
+                                    <p className="text-lg text-muted-foreground leading-relaxed">
+                                        Cuando las deudas se acumulan y ya no es posible ponerse al día, <strong className="font-bold text-foreground">la ley colombiana ofrece una salida legal, ordenada y definitiva</strong> para recuperar el control financiero.
+                                    </p>
+
+                                    <p className="text-base text-muted-foreground leading-relaxed">
+                                        En <strong className="font-bold text-foreground">Insolvencia Efectiva</strong> utilizamos el régimen de insolvencia de persona natural para ayudarte a <strong className="font-bold">detener cobros, suspender embargos y reorganizar tus obligaciones</strong> bajo condiciones reales y justas.
+                                    </p>
+
+                                    <div className="border-l-4 border-primary pl-4 py-1.5 bg-primary/5 rounded-r-xl">
+                                        <p className="text-base text-muted-foreground leading-relaxed italic">
+                                            Este no es un atajo ni una promesa vacía: es un <strong className="font-bold text-foreground">proceso legal respaldado por la ley</strong>, diseñado para personas que necesitan empezar de nuevo.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="pt-2">
+                                    <button
+                                        onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
+                                        className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold text-lg rounded-2xl shadow-soft hover:shadow-elegant hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                                    >
+                                        Quiero asesoría ahora
+                                        <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-2" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
