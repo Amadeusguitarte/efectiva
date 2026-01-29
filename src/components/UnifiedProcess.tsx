@@ -191,21 +191,21 @@ export const UnifiedProcess = () => {
                                         }`}
                                 >
                                     <div className={`bg-white p-6 md:p-10 rounded-[2rem] shadow-soft border transition-all duration-500 overflow-hidden ${activeStep === index
-                                            ? "border-primary/40 shadow-elegant ring-4 ring-primary/5"
-                                            : "border-border shadow-soft"
+                                        ? "border-primary/40 shadow-elegant ring-4 ring-primary/5"
+                                        : "border-border shadow-soft"
                                         }`}>
                                         <div className="flex flex-col gap-6">
                                             <div className="flex items-start justify-between gap-4">
-                                                <div className="flex items-center gap-4">
-                                                    <span className="text-primary font-bold italic text-xl">
+                                                <div className="flex items-center gap-6">
+                                                    <span className="text-primary font-black italic text-3xl md:text-5xl opacity-40">
                                                         {step.number}
                                                     </span>
-                                                    <h3 className="text-xl md:text-2xl font-bold text-primary leading-tight">
+                                                    <h3 className="text-xl md:text-3xl font-bold text-primary leading-tight">
                                                         {step.title}
                                                     </h3>
                                                 </div>
-                                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-                                                    <step.icon className="h-6 w-6" />
+                                                <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 shadow-inner">
+                                                    <step.icon className="h-8 w-8 md:h-10 md:w-10" />
                                                 </div>
                                             </div>
 
