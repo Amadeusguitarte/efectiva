@@ -31,7 +31,7 @@ export const Hero = () => {
           <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             <Button
               size="lg"
-              className="w-full sm:w-auto text-lg bg-primary hover:bg-primary/90 shadow-2xl"
+              className="w-full sm:w-auto text-lg bg-primary hover:bg-primary/90 shadow-2xl hover:scale-105 transition-all duration-300 ease-out hover:shadow-primary/25"
               onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
             >
               <Phone className="mr-2 h-5 w-5" />
