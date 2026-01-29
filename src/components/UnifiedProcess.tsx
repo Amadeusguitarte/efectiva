@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Search, ShieldCheck, Handshake, Heart, ArrowRight } from "lucide-react";
+import { Search, ShieldCheck, Handshake, Heart, ArrowRight, MessageCircle } from "lucide-react";
 
 const steps = [
     {
@@ -169,11 +169,11 @@ export const UnifiedProcess = () => {
 
                                 <div className="pt-2">
                                     <button
-                                        onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
+                                        onClick={() => window.open(`https://wa.me/573195420600?text=${encodeURIComponent("Hola, necesito información sobre la Ley de Insolvencia")}`, '_blank')}
                                         className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold text-lg rounded-2xl shadow-soft hover:shadow-elegant hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 group"
                                     >
                                         Quiero asesoría ahora
-                                        <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-2" />
+                                        <MessageCircle className="h-5 w-5 transition-transform group-hover:scale-110" />
                                     </button>
                                 </div>
                             </div>
