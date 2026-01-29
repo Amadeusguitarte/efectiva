@@ -97,6 +97,11 @@ export const ContactForm = () => {
                 minHeight: '650px',
                 width: '100%'
               }}
+              pageSettings={{
+                hideGdprBanner: true,
+                hideEventTypeDetails: false,
+                hideLandingPageDetails: false,
+              }}
               prefill={{
                 email: 'insolvenciaefectivacolombia@gmail.com',
                 name: 'Cliente Insolvencia'
