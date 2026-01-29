@@ -50,7 +50,7 @@ const Header = () => {
 
           <div className="hidden md:flex items-center gap-4">
             <Button
-              className="font-semibold shadow-soft hover:shadow-elegant transition-all duration-300"
+              className="font-semibold shadow-soft hover:shadow-elegant transition-all duration-300 hover:scale-105 active:scale-95 relative overflow-hidden group"
               onClick={() => {
                 const element = document.querySelector("#contact");
                 if (element) {
@@ -58,7 +58,8 @@ const Header = () => {
                 }
               }}
             >
-              Agenda una llamada
+              <span className="relative z-10">Agenda una llamada</span>
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
             </Button>
           </div>
 

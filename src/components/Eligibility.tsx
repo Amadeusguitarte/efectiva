@@ -66,10 +66,14 @@ export const Eligibility = () => {
 
                     <button
                         onClick={() => window.scrollTo({ top: document.getElementById('contact')?.offsetTop || 0, behavior: 'smooth' })}
-                        className="w-full sm:w-auto px-10 py-5 bg-primary text-white text-xl font-bold rounded-2xl shadow-lg hover:shadow-elegant hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto group"
+                        className="w-full sm:w-auto px-10 py-5 bg-primary text-white text-xl font-bold rounded-2xl shadow-lg hover:shadow-elegant hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 mx-auto group relative overflow-hidden"
                     >
-                        Quiero una asesoría gratuita
-                        <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-2" />
+                        <span className="relative z-10 flex items-center gap-3">
+                            Quiero una asesoría gratuita
+                            <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-2" />
+                        </span>
+                        {/* Shine effect */}
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
                     </button>
                 </div>
             </div>
