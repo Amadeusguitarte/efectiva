@@ -9,8 +9,8 @@ const Header = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const navLinks = [
+    { name: "Beneficios", href: "#beneficios" },
     { name: "Cómo funciona", href: "#how-it-works" },
-    { name: "Servicios", href: "#services" },
     { name: "Nosotros", href: "#about" },
   ];
 

@@ -50,35 +50,33 @@ const faqs = [
 
 export const FAQ = () => {
   return (
-    <section className="py-20 gradient-subtle">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">
-            Preguntas Frecuentes
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Resolvemos tus dudas sobre la Ley de Insolvencia
-          </p>
-        </div>
+    <section id="faq" className="py-20 bg-[#f8f9fc]">
+      <div className="container mx-auto px-4 text-center mb-16">
+        <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">
+          Preguntas Frecuentes
+        </h2>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Resolvemos tus dudas sobre la Ley de Insolvencia
+        </p>
+      </div>
 
-        <div className="max-w-3xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4">
-            {faqs.map((faq, index) => (
-              <AccordionItem
-                key={index}
-                value={`item-${index}`}
-                className="bg-card border border-border rounded-lg px-6 shadow-soft"
-              >
-                <AccordionTrigger className="text-left font-semibold text-foreground hover:text-primary">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
+      <div className="max-w-3xl mx-auto">
+        <Accordion type="single" collapsible className="space-y-4">
+          {faqs.map((faq, index) => (
+            <AccordionItem
+              key={index}
+              value={`item-${index}`}
+              className="bg-white border border-border rounded-[1.5rem] px-8 shadow-soft overflow-hidden transition-all duration-300 hover:shadow-elegant"
+            >
+              <AccordionTrigger className="text-left font-bold text-lg text-foreground hover:text-primary py-6">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-lg leading-relaxed pb-6">
+                {faq.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
     </section>
   );

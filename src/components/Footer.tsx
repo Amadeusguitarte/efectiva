@@ -31,23 +31,28 @@ export const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Enlaces Rápidos</h4>
             <ul className="space-y-2 text-background/80">
               <li>
-                <a href="#servicios" className="hover:text-background transition-smooth">
-                  Servicios
+                <a href="#beneficios" className="hover:text-background transition-smooth">
+                  Beneficios
                 </a>
               </li>
               <li>
-                <a href="#proceso" className="hover:text-background transition-smooth">
+                <a href="#how-it-works" className="hover:text-background transition-smooth">
                   Cómo Funciona
                 </a>
               </li>
               <li>
-                <a href="#testimonios" className="hover:text-background transition-smooth">
-                  Testimonios
+                <a href="#elegibilidad" className="hover:text-background transition-smooth">
+                  ¿Quién puede aplicar?
                 </a>
               </li>
               <li>
                 <a href="#faq" className="hover:text-background transition-smooth">
                   Preguntas Frecuentes
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="hover:text-background transition-smooth">
+                  Nosotros
                 </a>
               </li>
             </ul>
@@ -60,17 +65,16 @@ export const Footer = () => {
               <li className="flex items-start gap-2">
                 <Phone className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p>+57 300 123 4567</p>
-                  <p>+57 601 234 5678</p>
+                  <p>+57 319 542 0600</p>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <p>info@insolvenciaefectiva.com</p>
+                <p>insolvenciaefectivacolombia@gmail.com</p>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <p>Calle 72 #10-51, Oficina 501<br />Bogotá, Colombia</p>
+                <p>Bogotá, Colombia</p>
               </li>
             </ul>
           </div>

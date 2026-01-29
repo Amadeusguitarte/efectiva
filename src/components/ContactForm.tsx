@@ -46,7 +46,7 @@ export const ContactForm = () => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Llámanos</p>
-                      <p className="font-semibold text-foreground">+57 300 123 4567</p>
+                      <p className="font-semibold text-foreground">+57 319 542 0600</p>
                     </div>
                   </div>
 
@@ -66,7 +66,7 @@ export const ContactForm = () => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Visítanos</p>
-                      <p className="font-semibold text-foreground text-sm">Calle 72 #10-51, Of. 501, Bogotá</p>
+                      <p className="font-semibold text-foreground text-sm">Bogotá, Colombia</p>
                     </div>
                   </div>
                 </div>
