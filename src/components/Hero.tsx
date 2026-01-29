@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Phone, MessageCircle } from "lucide-react";
-import heroImage from "@/assets/hero-image-family.png";
+import heroImage from "@/assets/hero-image-high-res.png";
 
 export const Hero = () => {
   return (
@@ -12,9 +12,9 @@ export const Hero = () => {
           alt="Libertad financiera con Insolvencia Efectiva"
           className="w-full h-full object-cover object-[center_top] lg:object-[right_top]"
         />
-        {/* Dark gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+        {/* Dark gradient overlay for text readability - REDUCED OPACITY */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
       </div>
 
       {/* Content */}
