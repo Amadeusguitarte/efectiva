@@ -132,7 +132,7 @@ export const UnifiedProcess = () => {
     }, []);
 
     return (
-        <section id="how-it-works" className="py-24 bg-[#f8f9fc] relative overflow-clip">
+        <section id="how-it-works" className="py-24 bg-[#eff6ff] relative overflow-clip">
             {/* Decorative background elements - No translate-x to avoid overflow */}
             <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 rounded-full blur-[120px] -translate-y-1/2" />
 
