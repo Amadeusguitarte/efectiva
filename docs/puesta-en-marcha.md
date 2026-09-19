@@ -6,7 +6,14 @@ Pasos para dejar la plataforma funcionando en un proyecto de Supabase nuevo y pu
 
 ## 1. Base de datos (Supabase)
 
-Aplica la migración `supabase/migrations/20260917120000_base_plataforma.sql`. Crea las tablas, las políticas RLS, los triggers y el bucket privado `propuestas`.
+Aplica **todas** las migraciones de `supabase/migrations/`, en orden alfabético y una sola vez cada una:
+
+| Archivo                                 | Qué crea                                                                                        |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `20260917120000_base_plataforma.sql`    | Perfiles, clientes, propuestas, historial, notas, consentimientos, RLS y el bucket `propuestas` |
+| `20260919120000_matriz_diagnostico.sql` | Matriz de diagnóstico: `diagnosticos`, `obligaciones` y la función `guardar_diagnostico`        |
+
+Cada pull request que cambie el esquema añade un archivo nuevo; nunca se edita uno ya aplicado.
 
 **Opción A: editor SQL.** En _SQL Editor_ pega el contenido del archivo y ejecútalo una sola vez.
 

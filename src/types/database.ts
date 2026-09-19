@@ -107,6 +107,84 @@ export type Database = {
           },
         ];
       };
+      diagnosticos: {
+        Row: {
+          actualizado_por: string | null;
+          bienes: string | null;
+          cliente_id: string;
+          created_at: string;
+          cuotas_honorarios: number;
+          descuento_centro_conciliacion: number;
+          estado_civil: Database["public"]["Enums"]["estado_civil"] | null;
+          gastos_mensuales: number | null;
+          id: string;
+          ingresos_mensuales: number | null;
+          objetivo_cliente: string | null;
+          observaciones_juridicas: string | null;
+          ocupacion: string | null;
+          porcentaje_honorarios: number;
+          requiere_centro_conciliacion: boolean;
+          situacion_urgencia: string | null;
+          tipo_servicio: Database["public"]["Enums"]["tipo_servicio"] | null;
+          updated_at: string;
+        };
+        Insert: {
+          actualizado_por?: string | null;
+          bienes?: string | null;
+          cliente_id: string;
+          created_at?: string;
+          cuotas_honorarios?: number;
+          descuento_centro_conciliacion?: number;
+          estado_civil?: Database["public"]["Enums"]["estado_civil"] | null;
+          gastos_mensuales?: number | null;
+          id?: string;
+          ingresos_mensuales?: number | null;
+          objetivo_cliente?: string | null;
+          observaciones_juridicas?: string | null;
+          ocupacion?: string | null;
+          porcentaje_honorarios?: number;
+          requiere_centro_conciliacion?: boolean;
+          situacion_urgencia?: string | null;
+          tipo_servicio?: Database["public"]["Enums"]["tipo_servicio"] | null;
+          updated_at?: string;
+        };
+        Update: {
+          actualizado_por?: string | null;
+          bienes?: string | null;
+          cliente_id?: string;
+          created_at?: string;
+          cuotas_honorarios?: number;
+          descuento_centro_conciliacion?: number;
+          estado_civil?: Database["public"]["Enums"]["estado_civil"] | null;
+          gastos_mensuales?: number | null;
+          id?: string;
+          ingresos_mensuales?: number | null;
+          objetivo_cliente?: string | null;
+          observaciones_juridicas?: string | null;
+          ocupacion?: string | null;
+          porcentaje_honorarios?: number;
+          requiere_centro_conciliacion?: boolean;
+          situacion_urgencia?: string | null;
+          tipo_servicio?: Database["public"]["Enums"]["tipo_servicio"] | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "diagnosticos_actualizado_por_fkey";
+            columns: ["actualizado_por"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "diagnosticos_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: true;
+            referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notas_internas: {
         Row: {
           autor_id: string | null;
@@ -142,6 +220,65 @@ export type Database = {
             columns: ["cliente_id"];
             isOneToOne: false;
             referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      obligaciones: {
+        Row: {
+          acreedor: string;
+          capital: number;
+          clase: Database["public"]["Enums"]["clase_credito"];
+          concepto: string | null;
+          created_at: string;
+          descuento_nomina: boolean;
+          diagnostico_id: string;
+          dias_mora: number | null;
+          id: string;
+          intereses: number;
+          mora: Database["public"]["Enums"]["mora_obligacion"];
+          orden: number;
+          tipo_garantia: Database["public"]["Enums"]["tipo_garantia"];
+          updated_at: string;
+        };
+        Insert: {
+          acreedor: string;
+          capital?: number;
+          clase?: Database["public"]["Enums"]["clase_credito"];
+          concepto?: string | null;
+          created_at?: string;
+          descuento_nomina?: boolean;
+          diagnostico_id: string;
+          dias_mora?: number | null;
+          id?: string;
+          intereses?: number;
+          mora?: Database["public"]["Enums"]["mora_obligacion"];
+          orden: number;
+          tipo_garantia?: Database["public"]["Enums"]["tipo_garantia"];
+          updated_at?: string;
+        };
+        Update: {
+          acreedor?: string;
+          capital?: number;
+          clase?: Database["public"]["Enums"]["clase_credito"];
+          concepto?: string | null;
+          created_at?: string;
+          descuento_nomina?: boolean;
+          diagnostico_id?: string;
+          dias_mora?: number | null;
+          id?: string;
+          intereses?: number;
+          mora?: Database["public"]["Enums"]["mora_obligacion"];
+          orden?: number;
+          tipo_garantia?: Database["public"]["Enums"]["tipo_garantia"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "obligaciones_diagnostico_id_fkey";
+            columns: ["diagnostico_id"];
+            isOneToOne: false;
+            referencedRelation: "diagnosticos";
             referencedColumns: ["id"];
           },
         ];
@@ -268,8 +405,19 @@ export type Database = {
     };
     Functions: {
       es_admin: { Args: never; Returns: boolean };
+      guardar_diagnostico: {
+        Args: {
+          p_cliente_id: string;
+          p_diagnostico: Json;
+          p_obligaciones: Json;
+          p_actualizado_en?: string | null;
+        };
+        Returns: { id: string; propuesta_en_diagnostico: boolean }[];
+      };
     };
     Enums: {
+      clase_credito: "primera" | "segunda" | "tercera" | "cuarta" | "quinta" | "por_verificar";
+      estado_civil: "soltero" | "casado" | "union_libre" | "divorciado" | "viudo";
       estado_propuesta:
         | "pendiente"
         | "requiere_informacion"
@@ -278,8 +426,11 @@ export type Database = {
         | "verificando"
         | "finalizada"
         | "cancelada";
+      mora_obligacion: "al_dia" | "menos_90_dias" | "mas_90_dias";
       rol_usuario: "admin" | "cliente";
       tipo_documento: "CC" | "CE" | "PA" | "PPT";
+      tipo_garantia: "sin_garantia" | "garantia_mobiliaria" | "hipoteca" | "otra_verificar";
+      tipo_servicio: "liquidacion_patrimonial" | "acuerdo_pago" | "acuerdo_pago_bilateral";
     };
     CompositeTypes: {
       [_ in never]: never;
