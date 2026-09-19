@@ -1,0 +1,27 @@
+# Solo entra al contexto de build lo necesario para compilar la aplicación.
+node_modules
+.next
+out
+coverage
+test-results
+.git
+.github
+.vscode
+.idea
+docs
+*.md
+*.log
+
+# Variables locales (las de producción se configuran en Railway)
+.env
+.env.*
+
+# Documentos de trabajo con datos de clientes: jamás dentro de una imagen
+privado
+Notas
+*.xlsx
+*.xls
+*.csv
+*.docx
+*.doc
+*.pdf

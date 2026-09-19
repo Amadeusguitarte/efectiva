@@ -1,0 +1,156 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Sistema de diseño de Insolvencia Efectiva.
+ * Todos los colores de la interfaz salen de estos tokens; no uses colores sueltos en los componentes.
+ */
+
+:root {
+  --radius: 0.75rem;
+
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(215 25% 27%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(215 25% 27%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(215 25% 27%);
+
+  --primary: hsl(210 100% 45%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(210 40% 96%);
+  --secondary-foreground: hsl(215 25% 27%);
+  --muted: hsl(210 40% 96%);
+  --muted-foreground: hsl(215 16% 47%);
+  --accent: hsl(210 100% 96%);
+  --accent-foreground: hsl(210 100% 30%);
+  --destructive: hsl(0 72% 51%);
+
+  --border: hsl(214 32% 91%);
+  --input: hsl(214 32% 91%);
+  --ring: hsl(210 100% 45%);
+
+  /* Superficies de marca */
+  --surface-soft: hsl(228 33% 98%);
+  --surface-blue: hsl(214 100% 97%);
+  --hero: hsl(196 61% 69%);
+  --navy: hsl(215 25% 27%);
+
+  /* Estados */
+  --success: hsl(152 60% 36%);
+  --success-soft: hsl(152 60% 95%);
+  --warning: hsl(32 95% 40%);
+  --warning-soft: hsl(40 100% 95%);
+  --info: hsl(210 100% 40%);
+  --info-soft: hsl(210 100% 96%);
+  --danger-soft: hsl(0 86% 97%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-blue: var(--surface-blue);
+  --color-hero: var(--hero);
+  --color-navy: var(--navy);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-danger-soft: var(--danger-soft);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-soft: 0 2px 8px hsl(210 20% 20% / 0.08);
+  --shadow-elegant: 0 10px 40px -10px hsl(210 100% 45% / 0.2);
+
+  --animate-shine: shine 0.8s ease-in-out;
+
+  @keyframes shine {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/* Ancho máximo del contenido de página (el padding lateral se define en cada sección). */
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 87.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  /* Compensa el header fijo al navegar a un ancla. */
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold text-balance;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

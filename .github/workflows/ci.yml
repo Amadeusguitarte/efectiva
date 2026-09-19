@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  calidad:
+    name: Lint, tipos, formato, pruebas y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_PUBLIC_SITE_URL: https://insolvenciaefectiva.com
+      # Valores públicos; configúralos en Settings → Secrets and variables → Actions → Variables.
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://ejemplo.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_ci' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Formato
+        run: npm run format:check
+
+      - name: Pruebas (unitarias y políticas de base de datos)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  imagen:
+    name: Imagen Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Construir la imagen (misma receta que Railway)
+        run: >
+          docker build
+          --build-arg NEXT_PUBLIC_SITE_URL=https://insolvenciaefectiva.com
+          --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://ejemplo.supabase.co' }}
+          --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_ci' }}
+          -t insolvencia-efectiva .
+
+      - name: Arrancar el contenedor y comprobar la salud
+        run: |
+          docker run -d --name app -p 3000:3000 insolvencia-efectiva
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/api/salud; then exit 0; fi
+            sleep 1
+          done
+          echo "La aplicación no respondió"; docker logs app; exit 1
