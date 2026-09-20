@@ -52,10 +52,9 @@ export const PARAMETROS_DIAGNOSTICO: ParametrosDiagnostico = {
   /**
    * Gastos del proceso que se suman a los honorarios (radicación, notificaciones, etc.).
    *
-   * El Excel calculaba `120.000 + 12.000 × COUNTA(B14:B35)`, pero ese rango es la columna de
-   * numeración fija de la tabla (siempre 21 celdas), así que en la práctica sumaba 372.000 a
-   * todos los casos; así se han cotizado las propuestas hasta ahora y así se conserva.
-   * Si el criterio real es 12.000 por acreedor, usa `fijos: 120_000` y `porObligacion: 12_000`.
+   * Criterio confirmado por el equipo (sept. 2026): 372.000 fijos por proceso. El Excel llegaba
+   * a esa cifra con `120.000 + 12.000 × COUNTA(B14:B35)` sobre la numeración fija de la tabla
+   * (siempre 21 celdas). Si algún día se cobra por acreedor, usa `fijos` y `porObligacion`.
    */
   gastosProceso: {
     fijos: 372_000,

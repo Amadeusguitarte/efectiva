@@ -53,10 +53,10 @@ El motor marca inconsistencias, en línea con la sección «INCONSISTENCIAS» de
 | `obligacion_por_verificar`  | aviso | Clase o garantía «por verificar»                                                              |
 | `obligacion_mora_dias`      | aviso | Los días de mora no coinciden con la categoría de mora                                        |
 
-## Diferencias deliberadas respecto al Excel
+## Diferencias respecto al Excel (confirmadas por el equipo)
 
-- **Gastos del proceso.** El Excel calculaba `120.000 + 12.000 × COUNTA(B14:B35)`, pero ese rango es la numeración fija de la tabla (siempre 21 celdas), así que sumaba **372.000** en todos los casos; así se cotizaron las propuestas hasta ahora y así se conserva (`gastosProceso.fijos = 372_000`, `porObligacion = 0`). Si el criterio real es 12.000 por acreedor, cambia a `fijos: 120_000` y `porObligacion: 12_000`.
-- **% de cada deuda.** El Excel dividía el capital (no el total) entre el pasivo; aquí se usa el total para que los porcentajes sumen 100 %.
+- **Gastos del proceso: 372.000 fijos por proceso** (`gastosProceso.fijos = 372_000`, `porObligacion = 0`). El Excel llegaba a esa cifra con `120.000 + 12.000 × COUNTA(B14:B35)` sobre la numeración fija de la tabla (siempre 21 celdas). Si algún día se cobra por acreedor, basta cambiar esos dos parámetros.
+- **% de cada deuda** se calcula sobre el total (capital + intereses), no solo sobre el capital como hacía el Excel, para que los porcentajes sumen 100 %.
 - **Pasivo total de «Datos propuesta».** La hoja del Excel sumaba solo 16 de las 20 filas; aquí siempre se suman todas.
 - **Redondeo.** Honorarios y cuota se redondean al peso.
 - **Centro con descuento mayor que la tarifa.** El Excel daba un valor negativo; aquí queda en 0 y se marca error.
