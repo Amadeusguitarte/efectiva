@@ -42,3 +42,31 @@ export function iniciales(nombre: string): string {
     .map((parte) => parte[0]?.toUpperCase() ?? "")
     .join("");
 }
+
+const enteroCO = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 });
+
+/** Pesos colombianos sin decimales, como en las propuestas: "$8.580.000". */
+export function formatearPesos(valor: number): string {
+  const redondeado = Math.round(valor);
+  const signo = redondeado < 0 ? "-" : "";
+  return `${signo}$${enteroCO.format(Math.abs(redondeado))}`;
+}
+
+/** Fracción como porcentaje: 0.3 -> "30 %". */
+export function formatearPorcentaje(fraccion: number, decimales = 0): string {
+  return `${new Intl.NumberFormat("es-CO", {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  }).format(fraccion * 100)} %`;
+}
+
+export function formatearNumero(valor: number): string {
+  return enteroCO.format(valor);
+}
+
+const porcentajeCO = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
+
+/** Porcentaje de honorarios tal como se registra (5 -> "5 %", 5.5 -> "5,5 %"). */
+export function formatearPorcentajeHonorarios(porcentaje: number): string {
+  return `${porcentajeCO.format(porcentaje)} %`;
+}

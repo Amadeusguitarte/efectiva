@@ -38,3 +38,17 @@ export function valoresTexto(
   }
   return valores;
 }
+
+/**
+ * Como `erroresDeValidacion`, pero conserva la ruta completa del campo ("obligaciones.2.capital")
+ * para formularios con listas anidadas. No devuelve `valores`: estos formularios mantienen su
+ * propio estado en el cliente.
+ */
+export function erroresPorRuta(error: z.ZodError): EstadoAccion {
+  const errores: Record<string, string[]> = {};
+  for (const issue of error.issues) {
+    const campo = issue.path.length ? issue.path.map(String).join(".") : "formulario";
+    (errores[campo] ??= []).push(issue.message);
+  }
+  return { ok: false, mensaje: "Revisa los campos marcados.", errores };
+}

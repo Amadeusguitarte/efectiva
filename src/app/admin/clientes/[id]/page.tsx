@@ -9,6 +9,7 @@ import { FormularioCliente } from "@/components/admin/formulario-cliente";
 import { FormularioEstadoPropuesta } from "@/components/admin/formulario-estado-propuesta";
 import { NotasInternas } from "@/components/admin/notas-internas";
 import { SubirDocumento } from "@/components/admin/subir-documento";
+import { TarjetaDiagnostico } from "@/components/diagnostico/tarjeta-diagnostico";
 import { EncabezadoPagina } from "@/components/plataforma/encabezado-pagina";
 import { EstadoBadge } from "@/components/propuestas/estado-badge";
 import { HistorialPropuesta } from "@/components/propuestas/historial-propuesta";
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { whatsappUrl } from "@/config/site";
 import { obtenerCliente } from "@/lib/datos/admin";
+import { obtenerDiagnosticoCliente } from "@/lib/datos/diagnostico";
 import { formatearFecha, formatearFechaHora, numeroWhatsApp, primerNombre } from "@/lib/formato";
 
 export const metadata: Metadata = {
@@ -27,8 +29,11 @@ export default async function ClientePage({ params }: PageProps<"/admin/clientes
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const cliente = await obtenerCliente(id);
-  if (!cliente) notFound();
+  const [cliente, diagnostico] = await Promise.all([
+    obtenerCliente(id),
+    obtenerDiagnosticoCliente(id),
+  ]);
+  if (!cliente || !diagnostico) notFound();
 
   const propuesta = cliente.propuestas;
   const accionActualizar = actualizarCliente.bind(null, cliente.id);
@@ -123,6 +128,8 @@ export default async function ClientePage({ params }: PageProps<"/admin/clientes
               )}
             </CardContent>
           </Card>
+
+          <TarjetaDiagnostico diagnostico={diagnostico} />
 
           <Card>
             <CardHeader>

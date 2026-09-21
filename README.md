@@ -4,13 +4,15 @@ Web pública y plataforma de gestión de [insolvenciaefectiva.com](https://insol
 
 ## Qué incluye
 
-| Área               | Ruta      | Quién entra                  | Qué hace                                                                                  |
-| ------------------ | --------- | ---------------------------- | ----------------------------------------------------------------------------------------- |
-| Web pública        | `/`       | Cualquiera                   | Landing, agenda en Calendly, WhatsApp, páginas legales, SEO                               |
-| Portal del cliente | `/portal` | Clientes (Google)            | Autorización de datos, estado y etapas de su propuesta, historial, descarga del PDF final |
-| Panel              | `/admin`  | Equipo (correo y contraseña) | Resumen, gestión de clientes, estado de cada propuesta, documento final, notas internas   |
+| Área               | Ruta      | Quién entra                  | Qué hace                                                                                                       |
+| ------------------ | --------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Web pública        | `/`       | Cualquiera                   | Landing, agenda en Calendly, WhatsApp, páginas legales, SEO                                                    |
+| Portal del cliente | `/portal` | Clientes (Google)            | Autorización de datos, estado y etapas de su propuesta, historial, descarga del PDF final                      |
+| Panel              | `/admin`  | Equipo (correo y contraseña) | Resumen, gestión de clientes, matriz de diagnóstico, estado de cada propuesta, documento final, notas internas |
 
 Estados de una propuesta: **Pendiente → En diagnóstico → En elaboración → Verificando → Finalizada**, más dos estados de pausa: **Requiere información** y **Cancelada**. Cada cambio queda en un historial que el cliente ve en su portal.
+
+La **matriz de diagnóstico** (`/admin/clientes/<id>/diagnostico`) reemplaza el Excel: registra la situación económica, las obligaciones y las condiciones del servicio, calcula en vivo el pasivo, la elegibilidad, los honorarios y el costo del proceso, y produce los «Datos para la propuesta». Reglas y fórmulas en [docs/matriz-diagnostico.md](docs/matriz-diagnostico.md).
 
 ## Tecnología
 
@@ -54,7 +56,7 @@ src/
   app/
     (marketing)/        Web pública y páginas legales (estáticas)
     (auth)/             Ingresar, recuperar y crear contraseña
-    admin/              Panel del equipo
+    admin/              Panel del equipo (clientes, matriz de diagnóstico, datos para la propuesta)
     portal/             Portal del cliente
     auth/               Retornos de Supabase Auth (OAuth y enlaces por correo)
     documentos/         Descarga de documentos con URL firmada
@@ -64,6 +66,7 @@ src/
   lib/
     auth/               Sesión, roles y redirecciones seguras
     datos/              Acceso a datos del panel y del portal (solo servidor)
+    diagnostico/        Motor de la matriz: catálogos, parámetros, cálculo y datos para la propuesta
     propuestas/         Estados y documentos de la propuesta
     supabase/           Clientes de Supabase (servidor, navegador, proxy)
     validaciones/       Esquemas Zod
@@ -87,10 +90,11 @@ docs/                   Guías de configuración y despliegue
 
 La guía completa (Supabase, Google, Railway, dominio y primer administrador) está en [docs/puesta-en-marcha.md](docs/puesta-en-marcha.md).
 
-## Próximas fases
+## Fases
 
-1. **Matriz de diagnóstico**: llevar las fórmulas del Excel a un motor de cálculo en TypeScript con pruebas que verifiquen que coincide con el Excel.
-2. **Programación de pagos de honorarios**: tablas por cliente y por fecha, importación desde Excel y cruce con la matriz.
-3. **Propuesta con IA**: generación asistida desde el servidor (plantilla de prompt versionada, cifras calculadas por el motor, revisión del abogado antes de entregar).
+1. ✅ **Plataforma base**: web pública, acceso, panel, portal y despliegue.
+2. ✅ **Matriz de diagnóstico**: motor de cálculo en TypeScript con pruebas contra los casos del Excel y una propuesta real; ver [docs/matriz-diagnostico.md](docs/matriz-diagnostico.md).
+3. **Programación de pagos de honorarios**: cuotas por cliente y por fecha, flujo de caja e importación desde Excel, generadas a partir de la matriz.
+4. **Propuesta con IA**: generación asistida desde el servidor (plantilla de prompt versionada, cifras del motor, revisión del abogado antes de entregar).
 
 Las convenciones de código están en [AGENTS.md](AGENTS.md).

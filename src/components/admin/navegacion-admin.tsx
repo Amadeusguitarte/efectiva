@@ -2,7 +2,6 @@
 
 import {
   CalendarClock,
-  ClipboardList,
   ExternalLink,
   LayoutDashboard,
   Menu,
@@ -32,10 +31,7 @@ const ITEMS: ItemNavegacion[] = [
   { nombre: "Clientes", href: "/admin/clientes", icono: Users },
 ];
 
-const PROXIMAMENTE = [
-  { nombre: "Matriz de diagnóstico", icono: ClipboardList },
-  { nombre: "Programación de pagos", icono: CalendarClock },
-];
+const PROXIMAMENTE = [{ nombre: "Programación de pagos", icono: CalendarClock }];
 
 function Enlaces({ alNavegar }: { alNavegar?: () => void }) {
   const pathname = usePathname();
@@ -79,7 +75,7 @@ function Enlaces({ alNavegar }: { alNavegar?: () => void }) {
               <Icono className="size-4" />
               <span className="flex-1">{nombre}</span>
               <Badge variant="outline" className="text-[10px] font-normal">
-                Fase 2
+                Fase 3
               </Badge>
             </li>
           ))}
