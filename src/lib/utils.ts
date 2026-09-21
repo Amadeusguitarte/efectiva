@@ -1,6 +1,2 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+// Punto de entrada que exige components.json (alias "utils"). El código del proyecto importa `cn` desde "cn".
+export { cn } from "cn";
