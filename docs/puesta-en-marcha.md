@@ -128,7 +128,7 @@ La aplicación se publica como contenedor Docker: `Dockerfile` en la raíz y Nex
 3. _Variables_: agrega las de la sección 4. Las `NEXT_PUBLIC_*` se incrustan durante el build; Railway las pasa como _build args_ porque el `Dockerfile` las declara con `ARG`. Cambiar una variable requiere un nuevo despliegue (_Deploy → Redeploy_).
 4. _Settings → Networking → Generate Domain_: obtienes `https://<servicio>.up.railway.app`. Úsala en `NEXT_PUBLIC_SITE_URL` y en las _Redirect URLs_ de Supabase (sección 2.1) para probar todo antes de tocar el dominio.
 5. _Custom Domain_: agrega `insolvenciaefectiva.com` y `www.insolvenciaefectiva.com` y crea en el DNS los registros que indique Railway. Cuando resuelvan, cambia `NEXT_PUBLIC_SITE_URL` a `https://insolvenciaefectiva.com` y vuelve a desplegar.
-6. Cuando el dominio responda desde Railway, desactiva GitHub Pages en _GitHub → Settings → Pages_.
+6. Cuando el dominio responda desde Railway, desactiva GitHub Pages en _GitHub → Settings → Pages_. Elimina de la raíz del repositorio los archivos temporales de la web antigua (`index.html`, `assets/`, `CNAME`, `.nojekyll`, `robots.txt` y las imágenes sueltas) junto con sus entradas en `.prettierignore`, `.dockerignore` y `eslint.config.mjs`.
 
 > Plan mínimo: **Hobby** (5 USD al mes con 5 USD de uso incluidos); es el primero que permite dominios propios. Esta aplicación usa unos 300 MB de memoria en reposo y cabe en ese crédito.
 >

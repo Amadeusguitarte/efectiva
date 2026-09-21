@@ -25,3 +25,13 @@ Notas
 *.docx
 *.doc
 *.pdf
+
+# Web antigua publicada temporalmente en GitHub Pages; no entra en la imagen
+index.html
+assets
+CNAME
+.nojekyll
+robots.txt
+*.png
+*.ico
+placeholder.svg

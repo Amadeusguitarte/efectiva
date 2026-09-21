@@ -7,3 +7,7 @@ package-lock.json
 next-env.d.ts
 supabase/.temp/
 privado/
+
+# Web antigua publicada temporalmente en GitHub Pages (raíz de main)
+/index.html
+/assets/
