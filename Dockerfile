@@ -32,6 +32,10 @@ ENV NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
 ENV NEXT_PUBLIC_META_PIXEL_ID=$NEXT_PUBLIC_META_PIXEL_ID
 
+# Falla pronto y con un mensaje claro si el host no pasó las variables al build.
+RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" ]; then echo "ERROR: faltan NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Definelas en Railway (Variables) y vuelve a desplegar."; exit 1; fi
+RUN echo "Build con NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-<vacio: se usa https://insolvenciaefectiva.com>}"
+
 RUN npm run build
 
 # ---- 3. Runtime ------------------------------------------------------------
