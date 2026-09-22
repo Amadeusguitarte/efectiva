@@ -3,28 +3,30 @@
 import Link from "next/link";
 import { useActionState } from "react";
 
-import { ingresarConCorreo } from "@/app/(auth)/acciones";
+import { ingresarConCredenciales } from "@/app/(auth)/acciones";
 import { BotonEnviar } from "@/components/formularios/boton-enviar";
 import { Campo } from "@/components/formularios/campo";
 import { MensajeFormulario } from "@/components/formularios/mensaje-formulario";
 import { Input } from "@/components/ui/input";
 import { ESTADO_INICIAL } from "@/lib/acciones";
 
-export function FormularioIngresoEquipo({ siguiente }: { siguiente: string | null }) {
-  const [estado, accion] = useActionState(ingresarConCorreo, ESTADO_INICIAL);
+export function FormularioIngreso({ siguiente }: { siguiente: string | null }) {
+  const [estado, accion] = useActionState(ingresarConCredenciales, ESTADO_INICIAL);
 
   return (
     <form action={accion} className="grid gap-4" noValidate>
       {siguiente ? <input type="hidden" name="siguiente" value={siguiente} /> : null}
       <MensajeFormulario estado={estado} />
-      <Campo etiqueta="Correo" errores={estado.errores?.email}>
+      <Campo etiqueta="Usuario o correo" errores={estado.errores?.usuario}>
         {(control) => (
           <Input
             {...control}
-            name="email"
-            type="email"
-            autoComplete="email"
-            defaultValue={estado.valores?.email}
+            name="usuario"
+            type="text"
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            defaultValue={estado.valores?.usuario}
             required
           />
         )}
@@ -40,8 +42,8 @@ export function FormularioIngresoEquipo({ siguiente }: { siguiente: string | nul
           />
         )}
       </Campo>
-      <BotonEnviar className="w-full" textoPendiente="Ingresando…">
-        Ingresar
+      <BotonEnviar size="lg" className="h-12 w-full text-base" textoPendiente="Iniciando sesión…">
+        Iniciar sesión
       </BotonEnviar>
       <Link
         href="/recuperar-contrasena"

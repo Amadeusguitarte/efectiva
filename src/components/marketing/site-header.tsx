@@ -33,7 +33,7 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-3 md:flex">
           <Button asChild variant="ghost" className="text-white hover:bg-white/10 hover:text-white">
-            <Link href="/ingresar">Mi proceso</Link>
+            <Link href="/ingresar">Iniciar sesión</Link>
           </Button>
           <Button
             asChild
@@ -76,7 +76,7 @@ export function SiteHeader() {
               onClick={cerrarMenu}
               className="py-2 text-base font-medium text-foreground hover:text-primary"
             >
-              Mi proceso
+              Iniciar sesión
             </Link>
             <Button asChild className="mt-2 w-full font-semibold">
               <EnlaceSeccion seccion={SECCIONES.agenda} onClick={cerrarMenu}>

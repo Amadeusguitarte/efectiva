@@ -1,9 +1,24 @@
 import { z } from "zod";
 
+import { correoDeUsuario, esNombreDeUsuario } from "@/lib/auth/usuarios";
+
 import { correoSchema } from "./comunes";
 
+/** Usuario del equipo (`admininsolvencia`) o correo completo; se entrega siempre como correo. */
+export const usuarioOCorreoSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, "Escribe tu usuario o correo.")
+  .refine(
+    (valor) =>
+      valor.includes("@") ? z.email().safeParse(valor).success : esNombreDeUsuario(valor),
+    "Escribe un usuario o correo válido.",
+  )
+  .transform(correoDeUsuario);
+
 export const ingresoSchema = z.object({
-  email: correoSchema,
+  usuario: usuarioOCorreoSchema,
   password: z.string().min(1, "Escribe tu contraseña."),
 });
 

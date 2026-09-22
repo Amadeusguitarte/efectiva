@@ -32,21 +32,24 @@ export async function ingresarConGoogle(formData: FormData) {
   redirect(data.url as Route);
 }
 
-export async function ingresarConCorreo(
+export async function ingresarConCredenciales(
   _estado: EstadoAccion,
   formData: FormData,
 ): Promise<EstadoAccion> {
   const datos = ingresoSchema.safeParse({
-    email: formData.get("email"),
+    usuario: formData.get("usuario"),
     password: formData.get("password"),
   });
-  const valores = valoresTexto(formData, ["email"]);
+  const valores = valoresTexto(formData, ["usuario"]);
   if (!datos.success) return erroresDeValidacion(datos.error, valores);
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithPassword(datos.data);
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: datos.data.usuario,
+    password: datos.data.password,
+  });
   if (error || !data.user) {
-    return { ok: false, mensaje: "Correo o contraseña incorrectos.", valores };
+    return { ok: false, mensaje: "Usuario o contraseña incorrectos.", valores };
   }
 
   const { data: perfil } = await supabase

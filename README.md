@@ -4,11 +4,11 @@ Web pública y plataforma de gestión de [insolvenciaefectiva.com](https://insol
 
 ## Qué incluye
 
-| Área               | Ruta      | Quién entra                  | Qué hace                                                                                                       |
-| ------------------ | --------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Web pública        | `/`       | Cualquiera                   | Landing, agenda en Calendly, WhatsApp, páginas legales, SEO                                                    |
-| Portal del cliente | `/portal` | Clientes (Google)            | Autorización de datos, estado y etapas de su propuesta, historial, descarga del PDF final                      |
-| Panel              | `/admin`  | Equipo (correo y contraseña) | Resumen, gestión de clientes, matriz de diagnóstico, estado de cada propuesta, documento final, notas internas |
+| Área               | Ruta      | Quién entra                   | Qué hace                                                                                                       |
+| ------------------ | --------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Web pública        | `/`       | Cualquiera                    | Landing, agenda en Calendly, WhatsApp, páginas legales, SEO                                                    |
+| Portal del cliente | `/portal` | Clientes (Google)             | Autorización de datos, estado y etapas de su propuesta, historial, descarga del PDF final                      |
+| Panel              | `/admin`  | Equipo (usuario y contraseña) | Resumen, gestión de clientes, matriz de diagnóstico, estado de cada propuesta, documento final, notas internas |
 
 Estados de una propuesta: **Pendiente → En diagnóstico → En elaboración → Verificando → Finalizada**, más dos estados de pausa: **Requiere información** y **Cancelada**. Cada cambio queda en un historial que el cliente ve en su portal.
 

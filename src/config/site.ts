@@ -27,6 +27,10 @@ export const siteConfig = {
     name: "Juan Hernandez",
     role: "Representante Insolvencia Efectiva",
   },
+  /** Cuentas del equipo: el usuario `nombre` inicia sesión como `nombre@<usernameDomain>`. */
+  team: {
+    usernameDomain: "insolvenciaefectiva.com",
+  },
   /**
    * Datos del responsable del tratamiento de datos. Los campos vacíos no se muestran en las
    * páginas legales; complétalos antes de publicar.

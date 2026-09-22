@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ingresarConGoogle } from "@/app/(auth)/acciones";
-import { FormularioIngresoEquipo } from "@/components/auth/formulario-ingreso-equipo";
+import { FormularioIngreso } from "@/components/auth/formulario-ingreso";
 import { BotonEnviar } from "@/components/formularios/boton-enviar";
 import { GoogleIcon } from "@/components/iconos/google";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -13,7 +13,7 @@ import { destinoTrasIngreso, rutaSegura } from "@/lib/auth/rutas";
 import { obtenerUsuario } from "@/lib/auth/sesion";
 
 export const metadata: Metadata = {
-  title: "Ingresar",
+  title: "Iniciar sesión",
 };
 
 const MENSAJES_ERROR: Record<string, string> = {
@@ -36,9 +36,9 @@ export default async function IngresarPage({ searchParams }: PageProps<"/ingresa
   return (
     <Card className="shadow-elegant">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Bienvenido a tu portal</CardTitle>
+        <CardTitle className="text-2xl">Iniciar sesión</CardTitle>
         <CardDescription>
-          Consulta el avance de tu proceso y descarga tu propuesta legal.
+          Entra con tu usuario y contraseña. Si eres cliente, usa tu cuenta de Google.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
@@ -48,6 +48,17 @@ export default async function IngresarPage({ searchParams }: PageProps<"/ingresa
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
+
+        <FormularioIngreso siguiente={siguiente} />
+
+        <div
+          aria-hidden
+          className="flex items-center gap-3 text-xs tracking-wide text-muted-foreground uppercase"
+        >
+          <span className="h-px flex-1 bg-border" />
+          <span>o</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
 
         <form action={ingresarConGoogle} className="grid gap-3">
           {siguiente ? <input type="hidden" name="siguiente" value={siguiente} /> : null}
@@ -72,18 +83,6 @@ export default async function IngresarPage({ searchParams }: PageProps<"/ingresa
             .
           </p>
         </form>
-
-        <details className="group rounded-lg border bg-surface-soft px-4 py-3 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-foreground">
-            ¿Eres parte del equipo?
-            <span className="text-muted-foreground transition-transform group-open:rotate-180">
-              ▾
-            </span>
-          </summary>
-          <div className="pt-4">
-            <FormularioIngresoEquipo siguiente={siguiente} />
-          </div>
-        </details>
       </CardContent>
     </Card>
   );

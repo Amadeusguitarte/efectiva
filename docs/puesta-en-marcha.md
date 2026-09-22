@@ -57,10 +57,11 @@ Cuando un cliente entra por primera vez con Google:
 - Si el equipo ya había creado su expediente con el mismo correo, la cuenta se vincula a ese expediente.
 - Si no existía, se crea un expediente nuevo con su propuesta en estado _Pendiente_.
 
-### 2.3 Cuentas del equipo (correo y contraseña)
+### 2.3 Cuentas del equipo (usuario y contraseña)
 
 - Mantén activo el proveedor _Email_ con **Confirm email** habilitado.
-- Las cuentas del equipo se crean por invitación. Quien se registre por su cuenta con correo y contraseña queda como cliente sin expediente y no ve ningún dato.
+- El equipo entra con un **nombre de usuario** corto (por ejemplo `admininsolvencia`). La plataforma lo convierte en el correo `admininsolvencia@insolvenciaefectiva.com`, con el dominio definido en `siteConfig.team.usernameDomain`; también se acepta el correo completo.
+- Las cuentas del equipo las crea un administrador en Supabase (sección 3). Quien se registre por su cuenta con correo y contraseña queda como cliente sin expediente y no ve ningún dato.
 
 ### 2.4 Plantillas de correo
 
@@ -94,16 +95,16 @@ _Authentication → Emails → Templates_. Los enlaces deben apuntar a `/auth/co
 
 El servidor de correo incluido en Supabase tiene límites de envío muy bajos y solo sirve para pruebas. En producción configura un SMTP propio en _Authentication → Emails → SMTP Settings_ (por ejemplo Resend, Postmark o Amazon SES) con un remitente del dominio, como `no-responder@insolvenciaefectiva.com`.
 
-## 3. Primer administrador
+## 3. Cuentas de administrador
 
-1. _Authentication → Users → Invite user_ con el correo de la persona.
+1. _Authentication → Users → Add user → Create new user_: correo `usuario@insolvenciaefectiva.com`, la contraseña y la casilla **Auto Confirm User** marcada. Si la persona tiene buzón propio, puedes usar _Invite user_ para que ella misma cree su contraseña.
 2. En _SQL Editor_:
 
    ```sql
-   update public.perfiles set rol = 'admin' where email = 'correo@dominio.com';
+   update public.perfiles set rol = 'admin' where email = 'usuario@insolvenciaefectiva.com';
    ```
 
-3. La persona abre el correo de invitación, crea su contraseña y entra a `/admin`.
+3. La persona entra en `/ingresar` con el usuario (`usuario`) y su contraseña y llega a `/admin`.
 
 Para quitar el acceso, cambia el rol a `'cliente'` o elimina el usuario.
 
