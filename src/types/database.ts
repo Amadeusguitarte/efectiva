@@ -358,6 +358,60 @@ export type Database = {
           },
         ];
       };
+      propuesta_redacciones: {
+        Row: {
+          actualizado_por: string | null;
+          cliente_id: string;
+          created_at: string;
+          honorarios: string | null;
+          id: string;
+          recomendacion: string | null;
+          situacion_economica: string | null;
+          situacion_legal: string | null;
+          tratamiento: Database["public"]["Enums"]["tratamiento_cliente"];
+          updated_at: string;
+        };
+        Insert: {
+          actualizado_por?: string | null;
+          cliente_id: string;
+          created_at?: string;
+          honorarios?: string | null;
+          id?: string;
+          recomendacion?: string | null;
+          situacion_economica?: string | null;
+          situacion_legal?: string | null;
+          tratamiento?: Database["public"]["Enums"]["tratamiento_cliente"];
+          updated_at?: string;
+        };
+        Update: {
+          actualizado_por?: string | null;
+          cliente_id?: string;
+          created_at?: string;
+          honorarios?: string | null;
+          id?: string;
+          recomendacion?: string | null;
+          situacion_economica?: string | null;
+          situacion_legal?: string | null;
+          tratamiento?: Database["public"]["Enums"]["tratamiento_cliente"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "propuesta_redacciones_actualizado_por_fkey";
+            columns: ["actualizado_por"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "propuesta_redacciones_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: true;
+            referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       propuestas: {
         Row: {
           cliente_id: string;
@@ -431,6 +485,7 @@ export type Database = {
       tipo_documento: "CC" | "CE" | "PA" | "PPT";
       tipo_garantia: "sin_garantia" | "garantia_mobiliaria" | "hipoteca" | "otra_verificar";
       tipo_servicio: "liquidacion_patrimonial" | "acuerdo_pago" | "acuerdo_pago_bilateral";
+      tratamiento_cliente: "senor" | "senora";
     };
     CompositeTypes: {
       [_ in never]: never;

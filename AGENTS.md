@@ -58,6 +58,6 @@ src/app/portal        Portal del cliente (rol cliente)
 src/app/auth          Retornos de Supabase Auth
 src/app/documentos    Descarga segura de documentos
 src/components        UI por área (marketing, admin, portal, propuestas, diagnostico, ui…)
-src/lib               Lógica: auth, datos, validaciones, estados, diagnostico (motor de la matriz), supabase
+src/lib               Lógica: auth, datos, validaciones, estados, diagnostico (motor de la matriz), propuestas (redacción y PDF), supabase
 supabase/             Migraciones y pruebas de políticas
 ```

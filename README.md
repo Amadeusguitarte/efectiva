@@ -14,6 +14,8 @@ Estados de una propuesta: **Pendiente → En diagnóstico → En elaboración �
 
 La **matriz de diagnóstico** (`/admin/clientes/<id>/diagnostico`) reemplaza el Excel: registra la situación económica, las obligaciones y las condiciones del servicio, calcula en vivo el pasivo, la elegibilidad, los honorarios y el costo del proceso, y produce los «Datos para la propuesta». Reglas y fórmulas en [docs/matriz-diagnostico.md](docs/matriz-diagnostico.md).
 
+La **propuesta legal en PDF** (`/admin/clientes/<id>/propuesta`) se genera con el formato oficial a partir de la matriz: el equipo ajusta los textos de los puntos 1 a 4 (o deja el borrador automático) y pulsa **Generar PDF**. Detalles en [docs/propuesta-pdf.md](docs/propuesta-pdf.md).
+
 ## Tecnología
 
 | Capa           | Herramienta                                                                     |

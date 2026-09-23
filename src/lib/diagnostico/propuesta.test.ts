@@ -48,6 +48,9 @@ describe("datos para la propuesta", () => {
         valorAdeudado: 23_000_000,
         tipoGarantia: "Sin garantía",
         mora: "> 90 días",
+        codigoClase: "quinta",
+        codigoGarantia: "sin_garantia",
+        codigoMora: "mas_90_dias",
       },
       {
         clase: "TERCERA",
@@ -56,12 +59,16 @@ describe("datos para la propuesta", () => {
         valorAdeudado: 59_000_000,
         tipoGarantia: "Hipoteca",
         mora: "Al día",
+        codigoClase: "tercera",
+        codigoGarantia: "hipoteca",
+        codigoMora: "al_dia",
       },
     ]);
     expect(datos.pasivoTotal).toBe(82_000_005);
     expect(datos.elegibilidad).toEqual({ estado: "no_elegible", etiqueta: "NO ELEGIBLE" });
     expect(datos.cliente.estadoCivil).toBe("Casado/a");
     expect(datos.contrato).toEqual({
+      codigoServicio: "acuerdo_pago_bilateral",
       tipoServicio: "Acuerdo de Pago Bilateral",
       porcentajeHonorarios: 5,
       valorHonorarios: 4_100_000,

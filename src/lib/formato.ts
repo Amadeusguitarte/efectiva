@@ -24,6 +24,18 @@ export function formatearFechaHora(valor: string | Date): string {
   return fechaHora.format(new Date(valor));
 }
 
+const fechaLarga = new Intl.DateTimeFormat("es-CO", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: ZONA_HORARIA,
+});
+
+/** Fecha con el mes en letras, como en las propuestas: "11 de septiembre de 2026". */
+export function formatearFechaLarga(valor: string | Date): string {
+  return fechaLarga.format(new Date(valor));
+}
+
 /** Número para wa.me: solo dígitos, con indicativo 57 si es un celular colombiano de 10 dígitos. */
 export function numeroWhatsApp(telefono: string): string {
   const digitos = telefono.replace(/\D/g, "");

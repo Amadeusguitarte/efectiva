@@ -8,10 +8,11 @@ Pasos para dejar la plataforma funcionando en un proyecto de Supabase nuevo y pu
 
 Aplica **todas** las migraciones de `supabase/migrations/`, en orden alfabético y una sola vez cada una:
 
-| Archivo                                 | Qué crea                                                                                        |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `20260917120000_base_plataforma.sql`    | Perfiles, clientes, propuestas, historial, notas, consentimientos, RLS y el bucket `propuestas` |
-| `20260919120000_matriz_diagnostico.sql` | Matriz de diagnóstico: `diagnosticos`, `obligaciones` y la función `guardar_diagnostico`        |
+| Archivo                                  | Qué crea                                                                                        |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `20260917120000_base_plataforma.sql`     | Perfiles, clientes, propuestas, historial, notas, consentimientos, RLS y el bucket `propuestas` |
+| `20260919120000_matriz_diagnostico.sql`  | Matriz de diagnóstico: `diagnosticos`, `obligaciones` y la función `guardar_diagnostico`        |
+| `20260923120000_redaccion_propuesta.sql` | Propuesta legal en PDF: `propuesta_redacciones` (textos ajustados por el equipo)                |
 
 Cada pull request que cambie el esquema añade un archivo nuevo; nunca se edita uno ya aplicado.
 

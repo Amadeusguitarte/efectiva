@@ -12,6 +12,10 @@ import {
   INFO_MORA,
   INFO_TIPO_GARANTIA,
   INFO_TIPO_SERVICIO,
+  type ClaseCredito,
+  type MoraObligacion,
+  type TipoGarantia,
+  type TipoServicio,
 } from "./catalogos";
 
 /**
@@ -30,6 +34,10 @@ export type Acreencia = {
   valorAdeudado: number;
   tipoGarantia: string;
   mora: string;
+  /** Códigos de la matriz, para redactar la propuesta sin depender de las etiquetas. */
+  codigoClase: ClaseCredito;
+  codigoGarantia: TipoGarantia;
+  codigoMora: MoraObligacion;
 };
 
 export type DatosPropuesta = {
@@ -49,6 +57,7 @@ export type DatosPropuesta = {
   situacionUrgencia: string | null;
   objetivoCliente: string | null;
   contrato: {
+    codigoServicio: TipoServicio | null;
     tipoServicio: string | null;
     porcentajeHonorarios: number;
     valorHonorarios: number;
@@ -102,12 +111,16 @@ export function construirDatosPropuesta(
         valorAdeudado: o.total,
         tipoGarantia: INFO_TIPO_GARANTIA[o.tipoGarantia].etiquetaPropuesta,
         mora: INFO_MORA[o.mora].etiquetaPropuesta,
+        codigoClase: o.clase,
+        codigoGarantia: o.tipoGarantia,
+        codigoMora: o.mora,
       })),
     obligacionesConMoraMayor90: resultado.elegibilidad.obligacionesEnMora,
     observacionesJuridicas: entrada.observacionesJuridicas,
     situacionUrgencia: entrada.situacionUrgencia,
     objetivoCliente: entrada.objetivoCliente,
     contrato: {
+      codigoServicio: entrada.tipoServicio,
       tipoServicio: entrada.tipoServicio
         ? INFO_TIPO_SERVICIO[entrada.tipoServicio].etiquetaPropuesta
         : null,

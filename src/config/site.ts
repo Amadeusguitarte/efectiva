@@ -31,6 +31,17 @@ export const siteConfig = {
   team: {
     usernameDomain: "insolvenciaefectiva.com",
   },
+  /** Membrete de la propuesta legal en PDF (pie de página de la plantilla oficial). */
+  letterhead: {
+    phones: ["(+57) 312-320-2461", "(+57) 319-542-0600"],
+    email: "insolvenciaefectiva@gmail.com",
+    address: "Bogotá - Calle 104 #21-50 Oficina 503",
+  },
+  /** Abogada que firma las propuestas legales. */
+  lawyer: {
+    name: "Blanca Cecilia Buitrago Díaz",
+    title: "Abogada Insolvencia",
+  },
   /**
    * Datos del responsable del tratamiento de datos. Los campos vacíos no se muestran en las
    * páginas legales; complétalos antes de publicar.

@@ -1,5 +1,5 @@
-import { ChevronLeft, Mail, MessageCircle, Phone } from "lucide-react";
-import type { Metadata } from "next";
+import { ChevronLeft, FileDown, Mail, MessageCircle, Phone } from "lucide-react";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -109,6 +109,21 @@ export default async function ClientePage({ params }: PageProps<"/admin/clientes
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
+                <div className="grid gap-0.5">
+                  <p className="font-medium">Propuesta legal en PDF</p>
+                  <p className="text-sm text-muted-foreground">
+                    Con el formato oficial, a partir de la matriz de diagnóstico y la redacción del
+                    equipo.
+                  </p>
+                </div>
+                <Button asChild>
+                  <Link href={`/admin/clientes/${cliente.id}/propuesta` as Route}>
+                    <FileDown />
+                    Generar propuesta en PDF
+                  </Link>
+                </Button>
+              </div>
               {propuesta ? (
                 <>
                   <SubirDocumento

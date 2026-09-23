@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
   // Railway (Docker): al contenedor solo van los archivos necesarios.
   output: "standalone",
   typedRoutes: true,
+  // El generador de PDF usa módulos de Node; se carga desde node_modules sin empaquetar.
+  serverExternalPackages: ["@react-pdf/renderer"],
   images: {
     formats: ["image/avif", "image/webp"],
   },
