@@ -29,7 +29,9 @@ npm run build
 
 - **Toda Server Action y todo Route Handler valida la sesión y el rol** con `requerirAdmin()` / `requerirCliente()` de `src/lib/auth/sesion.ts`, aunque el proxy o el layout ya lo hagan: las acciones se pueden invocar directamente por POST. Única excepción: `src/app/api/salud/route.ts`, la comprobación de salud del host, que no lee sesión ni datos.
 - Los datos se leen solo desde la capa de datos (`src/lib/datos/*`, marcada con `server-only`) y se devuelven como objetos mínimos. Nunca pases a un Client Component filas completas ni rutas internas de Storage.
-- La base de datos aplica RLS en todas las tablas. Nunca uses la _service role key_ en la aplicación.
+- La base de datos aplica RLS en todas las tablas. Nunca uses la _service role key_ (ni la _secret key_) en la aplicación web. La única excepción es el proceso `worker/` (WhatsApp y correo del CRM), que corre aparte, no sirve HTTP y es el único que toca `wa_auth`.
+- Los secretos del CRM (claves de API, contraseñas de correo) se guardan cifrados con `CRM_CLAVE_CIFRADO` (`src/lib/crm/cifrado.ts`); nunca en claro.
+- La IA del CRM solo analiza y clasifica; no debe existir ninguna función que responda mensajes a los contactos.
 - Valida toda entrada con Zod (`src/lib/validaciones`). Las rutas de retorno (`siguiente`) pasan siempre por `rutaSegura()`.
 - Las herramientas de medición (GA4, Meta Pixel) solo se cargan en el grupo `(marketing)`, nunca en `/admin` ni `/portal`.
 - Los documentos de clientes (Excel, Word, PDF) jamás se versionan; `.gitignore` los excluye en la raíz y en `/privado`.
@@ -58,6 +60,7 @@ src/app/portal        Portal del cliente (rol cliente)
 src/app/auth          Retornos de Supabase Auth
 src/app/documentos    Descarga segura de documentos
 src/components        UI por área (marketing, admin, portal, propuestas, diagnostico, ui…)
-src/lib               Lógica: auth, datos, validaciones, estados, diagnostico (motor de la matriz), propuestas (redacción y PDF), supabase
+src/lib               Lógica: auth, datos, validaciones, estados, diagnostico (motor de la matriz), propuestas (redacción y PDF), crm (IA, cifrado, catálogos), supabase
+worker/               Proceso aparte del CRM: WhatsApp (QR) y correo (IMAP/SMTP)
 supabase/             Migraciones y pruebas de políticas
 ```

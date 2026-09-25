@@ -16,6 +16,8 @@ La **matriz de diagnóstico** (`/admin/clientes/<id>/diagnostico`) reemplaza el 
 
 La **propuesta legal en PDF** (`/admin/clientes/<id>/propuesta`) se genera con el formato oficial a partir de la matriz: el equipo ajusta los textos de los puntos 1 a 4 (o deja el borrador automático) y pulsa **Generar PDF**. Detalles en [docs/propuesta-pdf.md](docs/propuesta-pdf.md).
 
+El **CRM** (`/admin/crm`) organiza los contactos en un pipeline por etapas con responsable, próxima acción, tareas, historial y notificaciones; recibe y responde WhatsApp y correo desde el panel (siempre a mano) y analiza cada caso con la IA que el equipo elija en Configuración. Un proceso `worker` aparte mantiene WhatsApp (QR) y el correo (IMAP/SMTP). Detalles en [docs/crm.md](docs/crm.md).
+
 ## Tecnología
 
 | Capa           | Herramienta                                                                     |

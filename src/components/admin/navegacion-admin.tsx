@@ -2,9 +2,14 @@
 
 import {
   CalendarClock,
+  CheckSquare,
+  Columns3,
   ExternalLink,
   LayoutDashboard,
+  Mail,
   Menu,
+  MessageCircle,
+  Settings,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -23,12 +28,40 @@ type ItemNavegacion = {
   nombre: string;
   href: Route;
   icono: LucideIcon;
-  exacto?: boolean;
+  /** Decide si el enlace está activo; por defecto, cuando la ruta empieza por `href`. */
+  activo?: (pathname: string) => boolean;
 };
 
-const ITEMS: ItemNavegacion[] = [
-  { nombre: "Resumen", href: "/admin", icono: LayoutDashboard, exacto: true },
-  { nombre: "Clientes", href: "/admin/clientes", icono: Users },
+type GrupoNavegacion = { titulo?: string; items: ItemNavegacion[] };
+
+const GRUPOS: GrupoNavegacion[] = [
+  {
+    items: [
+      { nombre: "Resumen", href: "/admin", icono: LayoutDashboard, activo: (p) => p === "/admin" },
+      { nombre: "Clientes", href: "/admin/clientes", icono: Users },
+    ],
+  },
+  {
+    titulo: "CRM",
+    items: [
+      {
+        nombre: "Pipeline",
+        href: "/admin/crm",
+        icono: Columns3,
+        activo: (p) =>
+          p === "/admin/crm" ||
+          p.startsWith("/admin/crm/casos") ||
+          p.startsWith("/admin/crm/nuevo"),
+      },
+      { nombre: "WhatsApp", href: "/admin/crm/whatsapp", icono: MessageCircle },
+      { nombre: "Correo", href: "/admin/crm/correo", icono: Mail },
+      { nombre: "Tareas", href: "/admin/crm/tareas", icono: CheckSquare },
+    ],
+  },
+  {
+    titulo: "Sistema",
+    items: [{ nombre: "Configuración", href: "/admin/configuracion", icono: Settings }],
+  },
 ];
 
 const PROXIMAMENTE = [{ nombre: "Programación de pagos", icono: CalendarClock }];
@@ -38,29 +71,38 @@ function Enlaces({ alNavegar }: { alNavegar?: () => void }) {
 
   return (
     <nav aria-label="Panel" className="flex flex-1 flex-col gap-6">
-      <ul className="grid gap-1">
-        {ITEMS.map(({ nombre, href, icono: Icono, exacto }) => {
-          const activo = exacto ? pathname === href : pathname.startsWith(href);
-          return (
-            <li key={href}>
-              <Link
-                href={href}
-                onClick={alNavegar}
-                aria-current={activo ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  activo
-                    ? "bg-primary text-primary-foreground shadow-soft"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                <Icono className="size-4" />
-                {nombre}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      {GRUPOS.map((grupo, indice) => (
+        <div key={grupo.titulo ?? indice} className="grid gap-1">
+          {grupo.titulo ? (
+            <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground/80 uppercase">
+              {grupo.titulo}
+            </p>
+          ) : null}
+          <ul className="grid gap-1">
+            {grupo.items.map(({ nombre, href, icono: Icono, activo }) => {
+              const esActivo = activo ? activo(pathname) : pathname.startsWith(href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    onClick={alNavegar}
+                    aria-current={esActivo ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      esActivo
+                        ? "bg-primary text-primary-foreground shadow-soft"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )}
+                  >
+                    <Icono className="size-4" />
+                    {nombre}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
 
       <div className="grid gap-1">
         <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground/80 uppercase">
@@ -96,7 +138,7 @@ function Enlaces({ alNavegar }: { alNavegar?: () => void }) {
 
 export function BarraLateralAdmin() {
   return (
-    <div className="flex h-full flex-col gap-8 px-4 py-6">
+    <div className="flex h-full flex-col gap-8 overflow-y-auto px-4 py-6">
       <Logo href="/admin" className="px-2" />
       <Enlaces />
     </div>
@@ -117,7 +159,7 @@ export function MenuMovilAdmin() {
         <SheetHeader className="sr-only">
           <SheetTitle>Navegación del panel</SheetTitle>
         </SheetHeader>
-        <div className="flex h-full flex-col gap-8 px-4 py-6">
+        <div className="flex h-full flex-col gap-8 overflow-y-auto px-4 py-6">
           <Logo href="/admin" className="px-2" />
           <Enlaces alNavegar={() => setAbierto(false)} />
         </div>

@@ -107,6 +107,393 @@ export type Database = {
           },
         ];
       };
+      crm_ajustes: {
+        Row: {
+          actualizado_por: string | null;
+          clave: string;
+          secreto: string | null;
+          updated_at: string;
+          valor: Json;
+        };
+        Insert: {
+          actualizado_por?: string | null;
+          clave: string;
+          secreto?: string | null;
+          updated_at?: string;
+          valor?: Json;
+        };
+        Update: {
+          actualizado_por?: string | null;
+          clave?: string;
+          secreto?: string | null;
+          updated_at?: string;
+          valor?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "crm_ajustes_actualizado_por_fkey";
+            columns: ["actualizado_por"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      crm_casos: {
+        Row: {
+          analisis: Json | null;
+          cliente_id: string | null;
+          creado_por: string | null;
+          created_at: string;
+          email: string | null;
+          etapa_id: string;
+          id: string;
+          nombre: string;
+          origen: Database["public"]["Enums"]["crm_canal"] | null;
+          proxima_accion: string | null;
+          proxima_accion_fecha: string | null;
+          responsable_id: string | null;
+          telefono: string | null;
+          ultimo_mensaje_at: string | null;
+          ultimo_mensaje_direccion: Database["public"]["Enums"]["crm_direccion"] | null;
+          updated_at: string;
+        };
+        Insert: {
+          analisis?: Json | null;
+          cliente_id?: string | null;
+          creado_por?: string | null;
+          created_at?: string;
+          email?: string | null;
+          etapa_id: string;
+          id?: string;
+          nombre: string;
+          origen?: Database["public"]["Enums"]["crm_canal"] | null;
+          proxima_accion?: string | null;
+          proxima_accion_fecha?: string | null;
+          responsable_id?: string | null;
+          telefono?: string | null;
+          ultimo_mensaje_at?: string | null;
+          ultimo_mensaje_direccion?: Database["public"]["Enums"]["crm_direccion"] | null;
+          updated_at?: string;
+        };
+        Update: {
+          analisis?: Json | null;
+          cliente_id?: string | null;
+          creado_por?: string | null;
+          created_at?: string;
+          email?: string | null;
+          etapa_id?: string;
+          id?: string;
+          nombre?: string;
+          origen?: Database["public"]["Enums"]["crm_canal"] | null;
+          proxima_accion?: string | null;
+          proxima_accion_fecha?: string | null;
+          responsable_id?: string | null;
+          telefono?: string | null;
+          ultimo_mensaje_at?: string | null;
+          ultimo_mensaje_direccion?: Database["public"]["Enums"]["crm_direccion"] | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "crm_casos_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_casos_creado_por_fkey";
+            columns: ["creado_por"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_casos_etapa_id_fkey";
+            columns: ["etapa_id"];
+            isOneToOne: false;
+            referencedRelation: "crm_etapas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_casos_responsable_id_fkey";
+            columns: ["responsable_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      crm_etapas: {
+        Row: {
+          cierre: Database["public"]["Enums"]["crm_cierre"] | null;
+          color: string;
+          correo_automatico: Json | null;
+          created_at: string;
+          descripcion: string | null;
+          id: string;
+          nombre: string;
+          orden: number;
+          tareas_automaticas: Json;
+          updated_at: string;
+        };
+        Insert: {
+          cierre?: Database["public"]["Enums"]["crm_cierre"] | null;
+          color?: string;
+          correo_automatico?: Json | null;
+          created_at?: string;
+          descripcion?: string | null;
+          id?: string;
+          nombre: string;
+          orden: number;
+          tareas_automaticas?: Json;
+          updated_at?: string;
+        };
+        Update: {
+          cierre?: Database["public"]["Enums"]["crm_cierre"] | null;
+          color?: string;
+          correo_automatico?: Json | null;
+          created_at?: string;
+          descripcion?: string | null;
+          id?: string;
+          nombre?: string;
+          orden?: number;
+          tareas_automaticas?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      crm_eventos: {
+        Row: {
+          autor_id: string | null;
+          caso_id: string;
+          created_at: string;
+          datos: Json | null;
+          descripcion: string;
+          id: number;
+          tipo: Database["public"]["Enums"]["crm_tipo_evento"];
+        };
+        Insert: {
+          autor_id?: string | null;
+          caso_id: string;
+          created_at?: string;
+          datos?: Json | null;
+          descripcion: string;
+          id?: never;
+          tipo: Database["public"]["Enums"]["crm_tipo_evento"];
+        };
+        Update: {
+          autor_id?: string | null;
+          caso_id?: string;
+          created_at?: string;
+          datos?: Json | null;
+          descripcion?: string;
+          id?: never;
+          tipo?: Database["public"]["Enums"]["crm_tipo_evento"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "crm_eventos_autor_id_fkey";
+            columns: ["autor_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_eventos_caso_id_fkey";
+            columns: ["caso_id"];
+            isOneToOne: false;
+            referencedRelation: "crm_casos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      crm_mensajes: {
+        Row: {
+          asunto: string | null;
+          autor_id: string | null;
+          canal: Database["public"]["Enums"]["crm_canal"];
+          caso_id: string;
+          contenido: string;
+          created_at: string;
+          direccion: Database["public"]["Enums"]["crm_direccion"];
+          enviado_at: string | null;
+          error: string | null;
+          estado_envio: Database["public"]["Enums"]["crm_estado_envio"];
+          id: number;
+          id_externo: string | null;
+        };
+        Insert: {
+          asunto?: string | null;
+          autor_id?: string | null;
+          canal: Database["public"]["Enums"]["crm_canal"];
+          caso_id: string;
+          contenido: string;
+          created_at?: string;
+          direccion: Database["public"]["Enums"]["crm_direccion"];
+          enviado_at?: string | null;
+          error?: string | null;
+          estado_envio?: Database["public"]["Enums"]["crm_estado_envio"];
+          id?: never;
+          id_externo?: string | null;
+        };
+        Update: {
+          asunto?: string | null;
+          autor_id?: string | null;
+          canal?: Database["public"]["Enums"]["crm_canal"];
+          caso_id?: string;
+          contenido?: string;
+          created_at?: string;
+          direccion?: Database["public"]["Enums"]["crm_direccion"];
+          enviado_at?: string | null;
+          error?: string | null;
+          estado_envio?: Database["public"]["Enums"]["crm_estado_envio"];
+          id?: never;
+          id_externo?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "crm_mensajes_autor_id_fkey";
+            columns: ["autor_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_mensajes_caso_id_fkey";
+            columns: ["caso_id"];
+            isOneToOne: false;
+            referencedRelation: "crm_casos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      crm_notificaciones: {
+        Row: {
+          caso_id: string | null;
+          created_at: string;
+          cuerpo: string | null;
+          enlace: string | null;
+          id: number;
+          leida_at: string | null;
+          perfil_id: string;
+          titulo: string;
+        };
+        Insert: {
+          caso_id?: string | null;
+          created_at?: string;
+          cuerpo?: string | null;
+          enlace?: string | null;
+          id?: never;
+          leida_at?: string | null;
+          perfil_id: string;
+          titulo: string;
+        };
+        Update: {
+          caso_id?: string | null;
+          created_at?: string;
+          cuerpo?: string | null;
+          enlace?: string | null;
+          id?: never;
+          leida_at?: string | null;
+          perfil_id?: string;
+          titulo?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "crm_notificaciones_caso_id_fkey";
+            columns: ["caso_id"];
+            isOneToOne: false;
+            referencedRelation: "crm_casos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_notificaciones_perfil_id_fkey";
+            columns: ["perfil_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      crm_tareas: {
+        Row: {
+          caso_id: string;
+          completada_at: string | null;
+          creada_por: string | null;
+          created_at: string;
+          descripcion: string | null;
+          estado: Database["public"]["Enums"]["crm_estado_tarea"];
+          id: string;
+          origen_etapa_id: string | null;
+          responsable_id: string | null;
+          tipo: Database["public"]["Enums"]["crm_tipo_tarea"];
+          titulo: string;
+          updated_at: string;
+          vence_at: string | null;
+        };
+        Insert: {
+          caso_id: string;
+          completada_at?: string | null;
+          creada_por?: string | null;
+          created_at?: string;
+          descripcion?: string | null;
+          estado?: Database["public"]["Enums"]["crm_estado_tarea"];
+          id?: string;
+          origen_etapa_id?: string | null;
+          responsable_id?: string | null;
+          tipo?: Database["public"]["Enums"]["crm_tipo_tarea"];
+          titulo: string;
+          updated_at?: string;
+          vence_at?: string | null;
+        };
+        Update: {
+          caso_id?: string;
+          completada_at?: string | null;
+          creada_por?: string | null;
+          created_at?: string;
+          descripcion?: string | null;
+          estado?: Database["public"]["Enums"]["crm_estado_tarea"];
+          id?: string;
+          origen_etapa_id?: string | null;
+          responsable_id?: string | null;
+          tipo?: Database["public"]["Enums"]["crm_tipo_tarea"];
+          titulo?: string;
+          updated_at?: string;
+          vence_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "crm_tareas_caso_id_fkey";
+            columns: ["caso_id"];
+            isOneToOne: false;
+            referencedRelation: "crm_casos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_tareas_creada_por_fkey";
+            columns: ["creada_por"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_tareas_origen_etapa_id_fkey";
+            columns: ["origen_etapa_id"];
+            isOneToOne: false;
+            referencedRelation: "crm_etapas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "crm_tareas_responsable_id_fkey";
+            columns: ["responsable_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       diagnosticos: {
         Row: {
           actualizado_por: string | null;
@@ -453,11 +840,116 @@ export type Database = {
           },
         ];
       };
+      wa_auth: {
+        Row: {
+          clave: string;
+          cuenta_id: string;
+          updated_at: string;
+          valor: Json;
+        };
+        Insert: {
+          clave: string;
+          cuenta_id: string;
+          updated_at?: string;
+          valor: Json;
+        };
+        Update: {
+          clave?: string;
+          cuenta_id?: string;
+          updated_at?: string;
+          valor?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "wa_auth_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "wa_cuentas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      wa_cuentas: {
+        Row: {
+          cierre_solicitado: boolean;
+          conectado_at: string | null;
+          created_at: string;
+          estado: Database["public"]["Enums"]["wa_estado"];
+          id: string;
+          nombre: string;
+          qr: string | null;
+          reinicio_solicitado: boolean;
+          telefono: string | null;
+          ultimo_error: string | null;
+          updated_at: string;
+          visto_at: string | null;
+        };
+        Insert: {
+          cierre_solicitado?: boolean;
+          conectado_at?: string | null;
+          created_at?: string;
+          estado?: Database["public"]["Enums"]["wa_estado"];
+          id?: string;
+          nombre?: string;
+          qr?: string | null;
+          reinicio_solicitado?: boolean;
+          telefono?: string | null;
+          ultimo_error?: string | null;
+          updated_at?: string;
+          visto_at?: string | null;
+        };
+        Update: {
+          cierre_solicitado?: boolean;
+          conectado_at?: string | null;
+          created_at?: string;
+          estado?: Database["public"]["Enums"]["wa_estado"];
+          id?: string;
+          nombre?: string;
+          qr?: string | null;
+          reinicio_solicitado?: boolean;
+          telefono?: string | null;
+          ultimo_error?: string | null;
+          updated_at?: string;
+          visto_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      crm_mover_etapa: {
+        Args: {
+          p_caso_id: string;
+          p_etapa_id: string;
+          p_autor?: string | null;
+          p_motivo?: string | null;
+        };
+        Returns: undefined;
+      };
+      crm_normalizar_telefono: { Args: { p_valor: string }; Returns: string | null };
+      crm_notificar_caso: {
+        Args: { p_caso_id: string; p_titulo: string; p_cuerpo: string; p_excluir?: string | null };
+        Returns: undefined;
+      };
+      crm_registrar_entrante: {
+        Args: {
+          p_canal: Database["public"]["Enums"]["crm_canal"];
+          p_identificador: string;
+          p_nombre: string | null;
+          p_contenido: string;
+          p_id_externo?: string | null;
+          p_asunto?: string | null;
+          p_fecha?: string | null;
+        };
+        Returns: {
+          caso_id: string;
+          mensaje_id: number;
+          caso_nuevo: boolean;
+          mensaje_nuevo: boolean;
+        }[];
+      };
       es_admin: { Args: never; Returns: boolean };
       guardar_diagnostico: {
         Args: {
@@ -471,6 +963,24 @@ export type Database = {
     };
     Enums: {
       clase_credito: "primera" | "segunda" | "tercera" | "cuarta" | "quinta" | "por_verificar";
+      crm_canal: "whatsapp" | "correo";
+      crm_cierre: "ganado" | "perdido";
+      crm_direccion: "entrada" | "salida";
+      crm_estado_envio: "pendiente" | "enviado" | "fallido";
+      crm_estado_tarea: "pendiente" | "completada" | "cancelada";
+      crm_tipo_evento:
+        | "creacion"
+        | "etapa"
+        | "responsable"
+        | "proxima_accion"
+        | "nota"
+        | "tarea_creada"
+        | "tarea_completada"
+        | "correo_automatico"
+        | "analisis_ia"
+        | "expediente"
+        | "datos";
+      crm_tipo_tarea: "documentos" | "recontacto" | "seguimiento" | "otra";
       estado_civil: "soltero" | "casado" | "union_libre" | "divorciado" | "viudo";
       estado_propuesta:
         | "pendiente"
@@ -486,6 +996,7 @@ export type Database = {
       tipo_garantia: "sin_garantia" | "garantia_mobiliaria" | "hipoteca" | "otra_verificar";
       tipo_servicio: "liquidacion_patrimonial" | "acuerdo_pago" | "acuerdo_pago_bilateral";
       tratamiento_cliente: "senor" | "senora";
+      wa_estado: "desconectado" | "qr" | "conectando" | "conectado" | "error";
     };
     CompositeTypes: {
       [_ in never]: never;

@@ -13,6 +13,7 @@ Aplica **todas** las migraciones de `supabase/migrations/`, en orden alfabético
 | `20260917120000_base_plataforma.sql`     | Perfiles, clientes, propuestas, historial, notas, consentimientos, RLS y el bucket `propuestas` |
 | `20260919120000_matriz_diagnostico.sql`  | Matriz de diagnóstico: `diagnosticos`, `obligaciones` y la función `guardar_diagnostico`        |
 | `20260923120000_redaccion_propuesta.sql` | Propuesta legal en PDF: `propuesta_redacciones` (textos ajustados por el equipo)                |
+| `20260925120000_crm.sql`                 | CRM: etapas, casos, mensajes, tareas, historial, notificaciones, ajustes y cuenta de WhatsApp   |
 
 Cada pull request que cambie el esquema añade un archivo nuevo; nunca se edita uno ya aplicado.
 
@@ -111,15 +112,16 @@ Para quitar el acceso, cambia el rol a `'cliente'` o elimina el usuario.
 
 ## 4. Variables de entorno
 
-| Variable                               | Obligatoria      | Descripción                           |
-| -------------------------------------- | ---------------- | ------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`                 | Sí en producción | URL pública, sin barra final          |
-| `NEXT_PUBLIC_SUPABASE_URL`             | Sí               | _Project Settings → API_              |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Sí               | Clave publicable (`sb_publishable_…`) |
-| `NEXT_PUBLIC_GA_ID`                    | No               | ID de medición de GA4 (`G-…`)         |
-| `NEXT_PUBLIC_META_PIXEL_ID`            | No               | ID del píxel de Meta                  |
+| Variable                               | Obligatoria      | Descripción                                                                                                      |
+| -------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                 | Sí en producción | URL pública, sin barra final                                                                                     |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Sí               | _Project Settings → API_                                                                                         |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Sí               | Clave publicable (`sb_publishable_…`)                                                                            |
+| `NEXT_PUBLIC_GA_ID`                    | No               | ID de medición de GA4 (`G-…`)                                                                                    |
+| `NEXT_PUBLIC_META_PIXEL_ID`            | No               | ID del píxel de Meta                                                                                             |
+| `CRM_CLAVE_CIFRADO`                    | Para el CRM      | 32 bytes en hex (`openssl rand -hex 32`); cifra la clave de IA y la contraseña del correo. Igual en web y worker |
 
-La clave publicable puede estar en el navegador: la seguridad la garantiza RLS. **Nunca** configures la _secret/service role key_ en la aplicación.
+La clave publicable puede estar en el navegador: la seguridad la garantiza RLS. **Nunca** configures la _secret/service role key_ en la aplicación web; solo la usa el proceso `worker` del CRM (`SUPABASE_SECRET_KEY`), que corre como servicio aparte (ver [docs/crm.md](crm.md)).
 
 ## 5. Railway
 
@@ -135,6 +137,15 @@ La aplicación se publica como contenedor Docker: `Dockerfile` en la raíz y Nex
 > Plan mínimo: **Hobby** (5 USD al mes con 5 USD de uso incluidos); es el primero que permite dominios propios. Esta aplicación usa unos 300 MB de memoria en reposo y cabe en ese crédito.
 >
 > Opcional: _Settings → Environments → PR environments_ despliega cada pull request en una URL temporal.
+
+### 5.1 Servicio `worker` del CRM (WhatsApp y correo)
+
+El CRM necesita un segundo servicio en el mismo proyecto de Railway, creado desde el mismo repositorio:
+
+1. _New → GitHub Repo_ → `Amadeusguitarte/efectiva`. Nómbralo `worker`.
+2. _Variables_: `RAILWAY_DOCKERFILE_PATH=Dockerfile.worker`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY` (Supabase → _Project Settings → API Keys → secret key_) y `CRM_CLAVE_CIFRADO` (el mismo valor que en el servicio web).
+3. No necesita dominio. Despliega (_Deploy Latest Commit_) y comprueba en los logs «Worker en marcha».
+4. Aplica la migración `20260925120000_crm.sql` (sección 1) si aún no lo hiciste y conecta WhatsApp y el correo desde _Panel → Configuración_, donde están los instructivos.
 
 ## 6. GitHub
 

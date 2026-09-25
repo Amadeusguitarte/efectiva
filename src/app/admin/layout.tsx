@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 
 import { BarraLateralAdmin, MenuMovilAdmin } from "@/components/admin/navegacion-admin";
+import { CampanaNotificaciones } from "@/components/plataforma/campana-notificaciones";
 import { MenuUsuario } from "@/components/plataforma/menu-usuario";
 import { requerirAdmin } from "@/lib/auth/sesion";
+import { obtenerNotificaciones } from "@/lib/datos/crm";
 
 export const metadata: Metadata = {
   title: { default: "Panel", template: "%s | Panel · Insolvencia Efectiva" },
@@ -11,6 +13,10 @@ export const metadata: Metadata = {
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const usuario = await requerirAdmin();
+  const notificaciones = await obtenerNotificaciones(10).catch(() => ({
+    notificaciones: [],
+    noLeidas: 0,
+  }));
 
   return (
     <div className="min-h-dvh bg-surface-soft lg:grid lg:grid-cols-[16rem_1fr]">
@@ -26,12 +32,15 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             <MenuMovilAdmin />
             <p className="text-sm font-medium text-muted-foreground">Panel de gestión</p>
           </div>
-          <MenuUsuario
-            nombre={usuario.nombre}
-            email={usuario.email}
-            avatarUrl={usuario.avatarUrl}
-            puedeCambiarContrasena
-          />
+          <div className="flex items-center gap-1">
+            <CampanaNotificaciones inicial={notificaciones} />
+            <MenuUsuario
+              nombre={usuario.nombre}
+              email={usuario.email}
+              avatarUrl={usuario.avatarUrl}
+              puedeCambiarContrasena
+            />
+          </div>
         </header>
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 md:px-8 md:py-8 print:max-w-none print:p-0">
           {children}

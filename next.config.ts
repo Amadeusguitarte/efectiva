@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   typedRoutes: true,
   // El generador de PDF usa módulos de Node; se carga desde node_modules sin empaquetar.
-  serverExternalPackages: ["@react-pdf/renderer"],
+  serverExternalPackages: ["@react-pdf/renderer", "nodemailer", "imapflow", "mailparser", "qrcode"],
   images: {
     formats: ["image/avif", "image/webp"],
   },

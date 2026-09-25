@@ -72,3 +72,13 @@ jobs:
             sleep 1
           done
           echo "La aplicación no respondió"; docker logs app; exit 1
+
+      - name: Construir la imagen del worker del CRM
+        run: docker build -f Dockerfile.worker -t insolvencia-efectiva-worker .
+
+      - name: El worker arranca y exige sus variables
+        run: |
+          set +e
+          salida=$(docker run --rm insolvencia-efectiva-worker 2>&1)
+          echo "$salida"
+          echo "$salida" | grep -q "Faltan variables para el worker"
