@@ -12,6 +12,10 @@ type InputPesosProps = Omit<
 > & {
   valor: number | null;
   onCambio: (valor: number | null) => void;
+  /** Oculta el símbolo $ mientras el campo está vacío (celdas de la hoja de cálculo). */
+  ocultarSimboloVacio?: boolean;
+  /** Clase del símbolo $ (para ajustarlo a otros tamaños de campo). */
+  classNameSimbolo?: string;
 };
 
 const MAXIMO_DIGITOS = 12;
@@ -23,7 +27,14 @@ const esDigito = (caracter: string | undefined) => caracter !== undefined && /\d
  * entero (o null cuando está vacío). No admite decimales: honorarios y deudas se manejan en
  * pesos completos. Conserva la posición del cursor aunque cambien los separadores.
  */
-export function InputPesos({ valor, onCambio, className, ...props }: InputPesosProps) {
+export function InputPesos({
+  valor,
+  onCambio,
+  ocultarSimboloVacio = false,
+  className,
+  classNameSimbolo,
+  ...props
+}: InputPesosProps) {
   const ref = useRef<HTMLInputElement>(null);
   // Dígitos a la izquierda del cursor antes del cambio; se restaura tras renderizar.
   const digitosAntesDelCursor = useRef<number | null>(null);
@@ -50,12 +61,17 @@ export function InputPesos({ valor, onCambio, className, ...props }: InputPesosP
 
   return (
     <div className="relative">
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground"
-      >
-        $
-      </span>
+      {ocultarSimboloVacio && valor === null ? null : (
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground",
+            classNameSimbolo,
+          )}
+        >
+          $
+        </span>
+      )}
       <Input
         {...props}
         ref={ref}

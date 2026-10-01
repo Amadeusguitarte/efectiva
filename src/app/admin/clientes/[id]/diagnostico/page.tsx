@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
-import { FormularioDiagnostico } from "@/components/diagnostico/formulario-diagnostico";
+import { HojaDiagnostico } from "@/components/diagnostico/hoja/hoja-diagnostico";
 import { EncabezadoPagina } from "@/components/plataforma/encabezado-pagina";
 import { EstadoBadge } from "@/components/propuestas/estado-badge";
 import { Button } from "@/components/ui/button";
@@ -46,8 +46,8 @@ export default async function DiagnosticoPage({
             {cliente.propuesta ? <EstadoBadge estado={cliente.propuesta.estado} /> : null}
             <span>
               {diagnostico.existe && diagnostico.actualizadoAt
-                ? `Actualizada el ${formatearFechaHora(diagnostico.actualizadoAt)}. Los indicadores se recalculan mientras escribes.`
-                : "Sin registrar. Los indicadores se calculan mientras escribes y se guardan al final."}
+                ? `Actualizada el ${formatearFechaHora(diagnostico.actualizadoAt)}. Funciona como la hoja del Excel: las fórmulas se recalculan mientras escribes.`
+                : "Sin registrar. Diligénciala como la hoja del Excel; las fórmulas se recalculan solas y se guarda con Ctrl+S."}
             </span>
           </span>
         }
@@ -63,10 +63,16 @@ export default async function DiagnosticoPage({
         }
       />
 
-      <FormularioDiagnostico
+      <HojaDiagnostico
         accion={accion}
         inicial={diagnostico.entrada}
         actualizadoAt={diagnostico.actualizadoAt}
+        nombreCliente={cliente.nombre}
+        rutaDatosPropuesta={
+          diagnostico.existe
+            ? (`/admin/clientes/${cliente.id}/diagnostico/datos-propuesta` as Route)
+            : null
+        }
       />
     </>
   );

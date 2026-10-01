@@ -4,6 +4,18 @@ Reemplaza el Excel «Matriz_Diagnostico_Insolvencia_Efectiva_Ley_2445_2025». El
 
 El cliente nunca ve la matriz: solo recibe la propuesta final en su portal.
 
+## Vista de hoja de cálculo
+
+Por pedido del cliente, la matriz se ve y se usa como la hoja «Diagnóstico Cliente» del Excel (`src/components/diagnostico/hoja/`):
+
+- Misma distribución y colores: título azul oscuro con el logo, bloques «Datos del cliente», «Indicadores de elegibilidad preliminar» y observaciones (K:M), tabla de obligaciones B15:M35 con franjas, colores por clase, «Resumen por clase» y la lista de acreedores con el TOTAL en amarillo. Los colores son tokens `hoja-*` y `clase-*` de `globals.css`.
+- 20 filas de obligaciones siempre visibles; «Agregar filas» suma más. Las filas vacías no se guardan (`filasIncluidas()` en `src/lib/diagnostico/hoja.ts`).
+- Listas desplegables con los textos del Excel (`> 90 días`, `TERCERA`, `Sin garantía`, `SI`/`NO`).
+- Barra de fórmulas: al seleccionar una celda muestra su referencia (F5, C11…) y la fórmula equivalente en español. Es informativa; los cálculos los hace siempre `calcularDiagnostico()`.
+- Teclado: Enter baja, Mayús+Enter sube, flechas para moverse, Ctrl+S guarda. Se pueden pegar filas copiadas del Excel (columnas desde N° o desde la celda activa); los importes con `$` y puntos se interpretan.
+- Pestañas inferiores como en Excel: «Diagnóstico Cliente», «DATOS PROPUESTA» (otra página, con el mismo formato de la hoja del Excel) y «Guía 5 Clases».
+- Las alertas del motor aparecen en la franja «Revisión» sobre la hoja.
+
 ## Qué se registra
 
 | Sección                 | Campos                                                                                                           | Hoja del Excel                             |

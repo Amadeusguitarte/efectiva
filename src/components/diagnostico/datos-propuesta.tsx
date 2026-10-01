@@ -1,40 +1,65 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { DatosPropuesta as Datos } from "@/lib/diagnostico/propuesta";
 import { TEXTO_REQUIERE_REVISION } from "@/lib/diagnostico/propuesta";
 import { formatearFecha, formatearPesos, formatearPorcentajeHonorarios } from "@/lib/formato";
 import { cn } from "cn";
 
 import { AlertasDiagnostico } from "./alertas-diagnostico";
-import { ElegibilidadBadge } from "./elegibilidad-badge";
+import { FONDO_CLASE } from "./hoja/columnas";
 
 const sinDato = "—";
 const pesosONada = (valor: number | null) => (valor === null ? sinDato : formatearPesos(valor));
 
-function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+const CELDA = "border border-hoja-texto/70 px-2 py-1.5 break-words";
+
+/** Encabezado azul de sección, como en la hoja DATOS PROPUESTA del Excel. */
+function FilaSeccion({ children }: { children: React.ReactNode }) {
   return (
-    <section className="grid min-w-0 break-inside-avoid gap-3">
-      <h2 className="border-b pb-1 text-sm font-semibold tracking-wide text-primary uppercase">
-        {titulo}
-      </h2>
-      {children}
-    </section>
+    <tr className="break-inside-avoid">
+      <th
+        scope="colgroup"
+        colSpan={6}
+        className={cn(CELDA, "bg-hoja-encabezado text-center text-[17px] font-bold text-white")}
+      >
+        {children}
+      </th>
+    </tr>
   );
 }
 
-function Dato({ etiqueta, valor }: { etiqueta: string; valor: React.ReactNode }) {
+function FilaDato({
+  etiqueta,
+  valor,
+  claseValor,
+}: {
+  etiqueta: string;
+  valor: React.ReactNode;
+  claseValor?: string;
+}) {
   return (
-    <div className="grid gap-x-4 gap-y-0.5 py-1 text-sm sm:grid-cols-[minmax(0,14rem)_1fr]">
-      <dt className="text-muted-foreground">{etiqueta}</dt>
-      <dd className="min-w-0 break-words whitespace-pre-line">{valor}</dd>
-    </div>
+    <tr className="break-inside-avoid">
+      <th scope="row" className={cn(CELDA, "text-left font-bold")}>
+        {etiqueta}
+      </th>
+      <td colSpan={5} className={cn(CELDA, "text-center whitespace-pre-line", claseValor)}>
+        {valor}
+      </td>
+    </tr>
+  );
+}
+
+function FilaTexto({ texto }: { texto: string | null }) {
+  return (
+    <tr className="break-inside-avoid">
+      <td
+        colSpan={6}
+        className={cn(
+          CELDA,
+          "min-h-16 bg-hoja-etiqueta px-3 py-2 font-semibold whitespace-pre-line",
+        )}
+      >
+        {texto ?? sinDato}
+      </td>
+    </tr>
   );
 }
 
@@ -79,113 +104,107 @@ export function DatosPropuesta({
         <p className="text-sm text-muted-foreground">Generado el {formatearFecha(fecha)}</p>
       </header>
 
-      <Seccion titulo="1. Datos del cliente">
-        <dl className="divide-y">
-          <Dato etiqueta="Nombre" valor={cliente.nombre} />
-          <Dato etiqueta="Ocupación" valor={cliente.ocupacion ?? sinDato} />
-          <Dato etiqueta="Ingresos mensuales" valor={pesosONada(cliente.ingresosMensuales)} />
-          <Dato
-            etiqueta="Gastos mensuales aproximados"
-            valor={pesosONada(cliente.gastosMensuales)}
-          />
-          <Dato etiqueta="Bienes a nombre del deudor" valor={cliente.bienes ?? sinDato} />
-          <Dato etiqueta="Estado civil" valor={cliente.estadoCivil ?? sinDato} />
-          <Dato etiqueta="Pasivo total" valor={formatearPesos(datos.pasivoTotal)} />
-          <Dato
-            etiqueta="Elegibilidad del deudor"
-            valor={
-              <span className="inline-flex flex-wrap items-center gap-2">
-                {datos.elegibilidad.etiqueta}
-                <ElegibilidadBadge estado={datos.elegibilidad.estado} className="print:hidden" />
-              </span>
-            }
-          />
-        </dl>
-      </Seccion>
-
-      <Seccion titulo="2. Deudas del cliente">
-        {datos.acreencias.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sin obligaciones registradas.</p>
-        ) : (
-          <div className="w-full overflow-x-auto print:overflow-visible">
-            <Table className="min-w-[40rem] print:min-w-0 print:text-xs">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Clase</TableHead>
-                  <TableHead>Acreedor</TableHead>
-                  <TableHead>Concepto</TableHead>
-                  <TableHead className="text-right">Vr. adeudado</TableHead>
-                  <TableHead>Tipo de garantía</TableHead>
-                  <TableHead>Mora</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {datos.acreencias.map((a, indice) => (
-                  <TableRow key={indice}>
-                    <TableCell className="font-medium">{a.clase}</TableCell>
-                    <TableCell>{a.acreedor}</TableCell>
-                    <TableCell>{a.concepto || sinDato}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatearPesos(a.valorAdeudado)}
-                    </TableCell>
-                    <TableCell>{a.tipoGarantia}</TableCell>
-                    <TableCell>{a.mora}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={3}>Total</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatearPesos(datos.pasivoTotal)}
-                  </TableCell>
-                  <TableCell colSpan={2} />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </div>
-        )}
-        <p className="text-sm text-muted-foreground">
-          Obligaciones con más de 90 días de mora: {datos.obligacionesConMoraMayor90} de{" "}
-          {datos.acreencias.length}.
-        </p>
-      </Seccion>
-
-      <Seccion titulo="3. Observaciones jurídicas">
-        <p className="text-sm whitespace-pre-line">{datos.observacionesJuridicas ?? sinDato}</p>
-      </Seccion>
-
-      <Seccion titulo="4. Situación y urgencia del cliente">
-        <p className="text-sm whitespace-pre-line">{datos.situacionUrgencia ?? sinDato}</p>
-      </Seccion>
-
-      <Seccion titulo="5. Objetivo del cliente">
-        <p className="text-sm whitespace-pre-line">{datos.objetivoCliente ?? sinDato}</p>
-      </Seccion>
-
-      <Seccion titulo="6. Honorarios y datos del contrato">
-        <dl className="divide-y">
-          <Dato etiqueta="Tipo de servicio" valor={contrato.tipoServicio ?? sinDato} />
-          <Dato
-            etiqueta="% Honorarios"
-            valor={formatearPorcentajeHonorarios(contrato.porcentajeHonorarios)}
-          />
-          <Dato etiqueta="$ Honorarios" valor={formatearPesos(contrato.valorHonorarios)} />
-          <Dato etiqueta="Cuotas de honorarios" valor={String(contrato.cuotasHonorarios)} />
-          <Dato etiqueta="Valor de la cuota" valor={formatearPesos(contrato.valorCuota)} />
-          <Dato
-            etiqueta="Requiere centro de conciliación"
-            valor={contrato.requiereCentroConciliacion ? "SI" : "NO"}
-          />
-          {contrato.requiereCentroConciliacion ? (
-            <Dato
-              etiqueta="Valor del centro de conciliación"
-              valor={formatearPesos(contrato.valorCentroConciliacion)}
+      <div className="w-full overflow-x-auto print:overflow-visible">
+        <table className="w-full min-w-[44rem] table-fixed border-collapse font-hoja text-[15px] text-hoja-texto print:min-w-0 print:text-[11px]">
+          <colgroup>
+            <col className="w-[22%]" />
+            <col className="w-[20%]" />
+            <col className="w-[18%]" />
+            <col className="w-[15%]" />
+            <col className="w-[13%]" />
+            <col className="w-[12%]" />
+          </colgroup>
+          <tbody>
+            <FilaSeccion>1. DATOS DEL CLIENTE</FilaSeccion>
+            <FilaDato etiqueta="Nombre" valor={cliente.nombre} />
+            <FilaDato etiqueta="Ocupación" valor={cliente.ocupacion ?? sinDato} />
+            <FilaDato etiqueta="Ingresos mensuales" valor={pesosONada(cliente.ingresosMensuales)} />
+            <FilaDato
+              etiqueta="Gastos mensuales aproximados"
+              valor={pesosONada(cliente.gastosMensuales)}
             />
-          ) : null}
-          <Dato etiqueta="Costo del proceso" valor={formatearPesos(contrato.costoProceso)} />
-        </dl>
-      </Seccion>
+            <FilaDato etiqueta="Bienes a nombre del deudor" valor={cliente.bienes ?? sinDato} />
+            <FilaDato etiqueta="Estado civil" valor={cliente.estadoCivil ?? sinDato} />
+            <FilaDato etiqueta="Pasivo total" valor={formatearPesos(datos.pasivoTotal)} />
+            <FilaDato
+              etiqueta="Elegibilidad del deudor"
+              valor={datos.elegibilidad.etiqueta}
+              claseValor={cn(
+                "font-bold",
+                datos.elegibilidad.estado === "elegible" && "bg-hoja-elegible text-white",
+                datos.elegibilidad.estado === "no_elegible" && "bg-danger-soft text-destructive",
+              )}
+            />
+
+            <FilaSeccion>2. DEUDAS DEL CLIENTE</FilaSeccion>
+            <tr className="bg-hoja-encabezado text-white">
+              {["CLASE", "ACREEDOR", "CONCEPTO", "VR ADEUDADO", "TIPO DE GARANTÍA", "MORA"].map(
+                (titulo) => (
+                  <th key={titulo} scope="col" className={cn(CELDA, "text-center font-bold")}>
+                    {titulo}
+                  </th>
+                ),
+              )}
+            </tr>
+            {datos.acreencias.length === 0 ? (
+              <tr>
+                <td colSpan={6} className={cn(CELDA, "text-center text-hoja-texto/60")}>
+                  Sin obligaciones registradas.
+                </td>
+              </tr>
+            ) : null}
+            {datos.acreencias.map((a, indice) => (
+              <tr key={indice} className="text-center">
+                <td className={cn(CELDA, FONDO_CLASE[a.codigoClase])}>{a.clase}</td>
+                <td className={CELDA}>{a.acreedor}</td>
+                <td className={CELDA}>{a.concepto || sinDato}</td>
+                <td className={cn(CELDA, "tabular-nums")}>{formatearPesos(a.valorAdeudado)}</td>
+                <td className={CELDA}>{a.tipoGarantia}</td>
+                <td className={CELDA}>{a.mora}</td>
+              </tr>
+            ))}
+            <tr className="bg-hoja-banda text-center font-bold">
+              <td className={CELDA} />
+              <th scope="row" className={CELDA}>
+                TOTAL
+              </th>
+              <td className={CELDA} />
+              <td className={cn(CELDA, "tabular-nums")}>{formatearPesos(datos.pasivoTotal)}</td>
+              <td className={cn(CELDA, "text-[13px] font-normal")} colSpan={2}>
+                Mora &gt; 90 días: {datos.obligacionesConMoraMayor90} de {datos.acreencias.length}
+              </td>
+            </tr>
+
+            <FilaSeccion>Observaciones Jurídicas</FilaSeccion>
+            <FilaTexto texto={datos.observacionesJuridicas} />
+            <FilaSeccion>Situación/urgencia del cliente</FilaSeccion>
+            <FilaTexto texto={datos.situacionUrgencia} />
+            <FilaSeccion>Objetivo del cliente</FilaSeccion>
+            <FilaTexto texto={datos.objetivoCliente} />
+
+            <FilaSeccion>Honorarios y datos del contrato</FilaSeccion>
+            <FilaDato etiqueta="Tipo de servicio" valor={contrato.tipoServicio ?? sinDato} />
+            <FilaDato
+              etiqueta="% Honorarios"
+              valor={formatearPorcentajeHonorarios(contrato.porcentajeHonorarios)}
+            />
+            <FilaDato etiqueta="$ Honorarios" valor={formatearPesos(contrato.valorHonorarios)} />
+            <FilaDato etiqueta="Costo del proceso" valor={formatearPesos(contrato.costoProceso)} />
+            <FilaDato etiqueta="Cuotas de honorarios" valor={String(contrato.cuotasHonorarios)} />
+            <FilaDato etiqueta="Valor de la cuota" valor={formatearPesos(contrato.valorCuota)} />
+            <FilaDato
+              etiqueta="Requiere centro de conciliación"
+              valor={contrato.requiereCentroConciliacion ? "SI" : "NO"}
+            />
+            {contrato.requiereCentroConciliacion ? (
+              <FilaDato
+                etiqueta="Valor del centro de conciliación"
+                valor={formatearPesos(contrato.valorCentroConciliacion)}
+              />
+            ) : null}
+          </tbody>
+        </table>
+      </div>
     </article>
   );
 }

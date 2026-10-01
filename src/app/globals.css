@@ -44,6 +44,29 @@
   --info: hsl(210 100% 40%);
   --info-soft: hsl(210 100% 96%);
   --danger-soft: hsl(0 86% 97%);
+
+  /* Matriz de diagnóstico: colores de la hoja «Diagnóstico Cliente» del Excel original */
+  --hoja-titulo: #17365d;
+  --hoja-banda: #d9eaf7;
+  --hoja-encabezado: #4472c4;
+  --hoja-etiqueta: #eaf2f8;
+  --hoja-franja: #c1e4f5;
+  --hoja-cuadricula: #d4d4d4;
+  --hoja-borde: #156082;
+  --hoja-vineta: #0070c0;
+  --hoja-seleccion: #217346;
+  --hoja-total: #ffff00;
+  --hoja-elegible: #00b050;
+  --hoja-texto: #000000;
+  --hoja-fondo: #ffffff;
+  --hoja-marco: #f3f3f3;
+  --hoja-comentario: #c00000;
+  --clase-primera: #f4cccc;
+  --clase-segunda: #fce5cd;
+  --clase-tercera: #fff2cc;
+  --clase-cuarta: #d9ead3;
+  --clase-quinta: #d9eaf7;
+  --clase-por-verificar: #e7e6e6;
 }
 
 @theme inline {
@@ -78,6 +101,31 @@
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
   --color-danger-soft: var(--danger-soft);
+
+  --color-hoja-titulo: var(--hoja-titulo);
+  --color-hoja-banda: var(--hoja-banda);
+  --color-hoja-encabezado: var(--hoja-encabezado);
+  --color-hoja-etiqueta: var(--hoja-etiqueta);
+  --color-hoja-franja: var(--hoja-franja);
+  --color-hoja-cuadricula: var(--hoja-cuadricula);
+  --color-hoja-borde: var(--hoja-borde);
+  --color-hoja-vineta: var(--hoja-vineta);
+  --color-hoja-seleccion: var(--hoja-seleccion);
+  --color-hoja-total: var(--hoja-total);
+  --color-hoja-elegible: var(--hoja-elegible);
+  --color-hoja-texto: var(--hoja-texto);
+  --color-hoja-fondo: var(--hoja-fondo);
+  --color-hoja-marco: var(--hoja-marco);
+  --color-hoja-comentario: var(--hoja-comentario);
+  --color-clase-primera: var(--clase-primera);
+  --color-clase-segunda: var(--clase-segunda);
+  --color-clase-tercera: var(--clase-tercera);
+  --color-clase-cuarta: var(--clase-cuarta);
+  --color-clase-quinta: var(--clase-quinta);
+  --color-clase-por-verificar: var(--clase-por-verificar);
+
+  /* Tipografía de la hoja: la de Excel (Calibri) o su equivalente métrico (Carlito). */
+  --font-hoja: Calibri, Carlito, "Segoe UI", Arial, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
