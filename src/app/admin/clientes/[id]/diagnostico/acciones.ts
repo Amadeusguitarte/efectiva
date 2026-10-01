@@ -1,12 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 
 import { erroresPorRuta, type EstadoAccion } from "@/lib/acciones";
 import { requerirAdmin } from "@/lib/auth/sesion";
+import { buscarClientesParaMatriz } from "@/lib/datos/diagnostico";
+import type { ResultadoBusquedaClientes } from "@/lib/diagnostico/selector-cliente";
 import { createClient } from "@/lib/supabase/server";
-import { diagnosticoSchema, type DiagnosticoValidado } from "@/lib/validaciones/diagnostico";
+import {
+  busquedaClientesSchema,
+  diagnosticoSchema,
+  type DiagnosticoValidado,
+} from "@/lib/validaciones/diagnostico";
 import type { Json } from "@/types/database";
 
 /** Columnas de `public.diagnosticos` a partir del formulario validado. */
@@ -106,4 +113,25 @@ export async function guardarDiagnostico(
       ? "Diagnóstico guardado. La propuesta pasó a «En diagnóstico»."
       : "Diagnóstico guardado.",
   };
+}
+
+/**
+ * Buscador «Cambiar de cliente» de la matriz: sin texto devuelve los clientes con actividad más
+ * reciente; con texto, los que coinciden en nombre, documento, correo o teléfono.
+ */
+export async function buscarClientesMatriz(termino: unknown): Promise<ResultadoBusquedaClientes> {
+  await requerirAdmin();
+  const busqueda = busquedaClientesSchema.safeParse(termino);
+  if (!busqueda.success) return { ok: false, mensaje: "La búsqueda no es válida." };
+
+  try {
+    return { ok: true, clientes: await buscarClientesParaMatriz(busqueda.data) };
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error(
+      "Error al buscar clientes para la matriz:",
+      error instanceof Error ? error.message : error,
+    );
+    return { ok: false, mensaje: "No pudimos cargar los clientes. Inténtalo de nuevo." };
+  }
 }

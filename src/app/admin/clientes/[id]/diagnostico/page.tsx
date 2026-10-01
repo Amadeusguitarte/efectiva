@@ -1,17 +1,13 @@
-import { ChevronLeft, FileText } from "lucide-react";
 import type { Metadata, Route } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
-import { HojaDiagnostico } from "@/components/diagnostico/hoja/hoja-diagnostico";
-import { EncabezadoPagina } from "@/components/plataforma/encabezado-pagina";
+import { MatrizDiagnostico } from "@/components/diagnostico/matriz/matriz-diagnostico";
 import { EstadoBadge } from "@/components/propuestas/estado-badge";
-import { Button } from "@/components/ui/button";
 import { obtenerDiagnosticoCliente } from "@/lib/datos/diagnostico";
 import { formatearFechaHora } from "@/lib/formato";
 
-import { guardarDiagnostico } from "./acciones";
+import { buscarClientesMatriz, guardarDiagnostico } from "./acciones";
 
 export const metadata: Metadata = {
   title: "Matriz de diagnóstico",
@@ -30,50 +26,29 @@ export default async function DiagnosticoPage({
   const accion = guardarDiagnostico.bind(null, cliente.id);
 
   return (
-    <>
-      <Link
-        href={`/admin/clientes/${cliente.id}` as Route}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        {cliente.nombre}
-      </Link>
-
-      <EncabezadoPagina
-        titulo="Matriz de diagnóstico"
-        descripcion={
-          <span className="flex flex-wrap items-center gap-2">
-            {cliente.propuesta ? <EstadoBadge estado={cliente.propuesta.estado} /> : null}
-            <span>
-              {diagnostico.existe && diagnostico.actualizadoAt
-                ? `Actualizada el ${formatearFechaHora(diagnostico.actualizadoAt)}. Funciona como la hoja del Excel: las fórmulas se recalculan mientras escribes.`
-                : "Sin registrar. Diligénciala como la hoja del Excel; las fórmulas se recalculan solas y se guarda con Ctrl+S."}
-            </span>
-          </span>
-        }
-        acciones={
-          diagnostico.existe ? (
-            <Button asChild variant="outline">
-              <Link href={`/admin/clientes/${cliente.id}/diagnostico/datos-propuesta` as Route}>
-                <FileText />
-                Datos para la propuesta
-              </Link>
-            </Button>
-          ) : null
-        }
-      />
-
-      <HojaDiagnostico
-        accion={accion}
-        inicial={diagnostico.entrada}
-        actualizadoAt={diagnostico.actualizadoAt}
-        nombreCliente={cliente.nombre}
-        rutaDatosPropuesta={
-          diagnostico.existe
-            ? (`/admin/clientes/${cliente.id}/diagnostico/datos-propuesta` as Route)
-            : null
-        }
-      />
-    </>
+    <MatrizDiagnostico
+      // Al cambiar de cliente desde la pestaña, la matriz empieza de cero con los datos nuevos.
+      key={cliente.id}
+      accion={accion}
+      inicial={diagnostico.entrada}
+      actualizadoAt={diagnostico.actualizadoAt}
+      fechaActualizacion={
+        diagnostico.existe && diagnostico.actualizadoAt
+          ? formatearFechaHora(diagnostico.actualizadoAt)
+          : null
+      }
+      clienteId={cliente.id}
+      nombreCliente={cliente.nombre}
+      rutaCliente={`/admin/clientes/${cliente.id}` as Route}
+      buscarClientes={buscarClientesMatriz}
+      estadoPropuesta={
+        cliente.propuesta ? <EstadoBadge estado={cliente.propuesta.estado} /> : undefined
+      }
+      rutaDatosPropuesta={
+        diagnostico.existe
+          ? (`/admin/clientes/${cliente.id}/diagnostico/datos-propuesta` as Route)
+          : null
+      }
+    />
   );
 }

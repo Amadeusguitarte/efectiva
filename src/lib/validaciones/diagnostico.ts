@@ -78,6 +78,12 @@ export const diagnosticoSchema = z.object({
 
 export type DiagnosticoValidado = z.infer<typeof diagnosticoSchema>;
 
+/** Texto del buscador «Cambiar de cliente» de la matriz; vacío lista los clientes recientes. */
+export const busquedaClientesSchema = z
+  .string("Escribe un texto.")
+  .trim()
+  .max(100, "Máximo 100 caracteres.");
+
 // El resultado de la validación es exactamente lo que consume el motor de cálculo.
 const _compatible: DiagnosticoEntrada = null as unknown as DiagnosticoValidado;
 void _compatible;

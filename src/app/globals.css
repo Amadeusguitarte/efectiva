@@ -47,26 +47,31 @@
 
   /* Matriz de diagnóstico: colores de la hoja «Diagnóstico Cliente» del Excel original */
   --hoja-titulo: #17365d;
-  --hoja-banda: #d9eaf7;
   --hoja-encabezado: #4472c4;
   --hoja-etiqueta: #eaf2f8;
   --hoja-franja: #c1e4f5;
+  /* La franja de la tabla ya mezclada con el fondo: opaca, para las columnas fijas al desplazar */
+  --hoja-franja-suave: color-mix(in srgb, var(--hoja-franja) 55%, var(--card));
   --hoja-cuadricula: #d4d4d4;
-  --hoja-borde: #156082;
   --hoja-vineta: #0070c0;
-  --hoja-seleccion: #217346;
-  --hoja-total: #ffff00;
+  /* El amarillo del TOTAL del Excel, suavizado para el panel, y su borde superior */
+  --hoja-total: #fff3c4;
+  --hoja-total-borde: #e9c46a;
   --hoja-elegible: #00b050;
   --hoja-texto: #000000;
-  --hoja-fondo: #ffffff;
-  --hoja-marco: #f3f3f3;
-  --hoja-comentario: #c00000;
   --clase-primera: #f4cccc;
   --clase-segunda: #fce5cd;
   --clase-tercera: #fff2cc;
   --clase-cuarta: #d9ead3;
   --clase-quinta: #d9eaf7;
   --clase-por-verificar: #e7e6e6;
+  /* Versión intensa de cada clase, para barras e indicadores pequeños sobre fondo blanco */
+  --clase-primera-intenso: #e06666;
+  --clase-segunda-intenso: #f6b26b;
+  --clase-tercera-intenso: #f1c232;
+  --clase-cuarta-intenso: #93c47d;
+  --clase-quinta-intenso: #6fa8dc;
+  --clase-por-verificar-intenso: #999999;
 }
 
 @theme inline {
@@ -103,29 +108,28 @@
   --color-danger-soft: var(--danger-soft);
 
   --color-hoja-titulo: var(--hoja-titulo);
-  --color-hoja-banda: var(--hoja-banda);
   --color-hoja-encabezado: var(--hoja-encabezado);
   --color-hoja-etiqueta: var(--hoja-etiqueta);
   --color-hoja-franja: var(--hoja-franja);
+  --color-hoja-franja-suave: var(--hoja-franja-suave);
   --color-hoja-cuadricula: var(--hoja-cuadricula);
-  --color-hoja-borde: var(--hoja-borde);
   --color-hoja-vineta: var(--hoja-vineta);
-  --color-hoja-seleccion: var(--hoja-seleccion);
   --color-hoja-total: var(--hoja-total);
+  --color-hoja-total-borde: var(--hoja-total-borde);
   --color-hoja-elegible: var(--hoja-elegible);
   --color-hoja-texto: var(--hoja-texto);
-  --color-hoja-fondo: var(--hoja-fondo);
-  --color-hoja-marco: var(--hoja-marco);
-  --color-hoja-comentario: var(--hoja-comentario);
   --color-clase-primera: var(--clase-primera);
   --color-clase-segunda: var(--clase-segunda);
   --color-clase-tercera: var(--clase-tercera);
   --color-clase-cuarta: var(--clase-cuarta);
   --color-clase-quinta: var(--clase-quinta);
   --color-clase-por-verificar: var(--clase-por-verificar);
-
-  /* Tipografía de la hoja: la de Excel (Calibri) o su equivalente métrico (Carlito). */
-  --font-hoja: Calibri, Carlito, "Segoe UI", Arial, sans-serif;
+  --color-clase-primera-intenso: var(--clase-primera-intenso);
+  --color-clase-segunda-intenso: var(--clase-segunda-intenso);
+  --color-clase-tercera-intenso: var(--clase-tercera-intenso);
+  --color-clase-cuarta-intenso: var(--clase-cuarta-intenso);
+  --color-clase-quinta-intenso: var(--clase-quinta-intenso);
+  --color-clase-por-verificar-intenso: var(--clase-por-verificar-intenso);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

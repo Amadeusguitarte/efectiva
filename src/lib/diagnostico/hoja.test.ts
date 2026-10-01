@@ -3,11 +3,12 @@ import { describe, expect, it } from "vitest";
 import { obligacionVacia } from "./calcular";
 import {
   COLUMNAS_TABLA,
+  FILAS_LIBRES,
   FILAS_MINIMAS,
-  completarFilas,
+  ajustarFilasLibres,
   esPegadoDeHoja,
+  filaVacia,
   filasIncluidas,
-  formulasHoja,
   leerClase,
   leerGarantia,
   leerMora,
@@ -15,6 +16,7 @@ import {
   leerPortapapeles,
   leerSiNo,
   pegarBloque,
+  primeraFilaLibre,
   type FilaHoja,
 } from "./hoja";
 
@@ -29,18 +31,64 @@ const fila = (clave: number, cambios: Partial<FilaHoja["obligacion"]>, enUso = t
   obligacion: { ...obligacionVacia(), ...cambios },
 });
 
-describe("filas de la hoja", () => {
-  it("completa hasta 20 filas vacías, como el Excel", () => {
-    const filas = completarFilas([fila(0, { acreedor: "Davivienda" })], contador());
+const conDatos = (cantidad: number) =>
+  Array.from({ length: cantidad }, (_, i) => fila(i, { acreedor: `Acreedor ${i + 1}` }));
+
+describe("filas de la tabla", () => {
+  it("una matriz nueva muestra el mínimo de filas, todas libres", () => {
+    const filas = ajustarFilasLibres([], contador());
     expect(filas).toHaveLength(FILAS_MINIMAS);
-    expect(filas[0]?.enUso).toBe(true);
-    expect(filas.slice(1).every((f) => !f.enUso)).toBe(true);
+    expect(filas.every((f) => !f.enUso)).toBe(true);
     expect(new Set(filas.map((f) => f.clave)).size).toBe(FILAS_MINIMAS);
   });
 
-  it("no recorta si ya hay más filas", () => {
-    const filas = Array.from({ length: 25 }, (_, i) => fila(i, { acreedor: `A${i}` }));
-    expect(completarFilas(filas, contador())).toHaveLength(25);
+  it("deja siempre filas libres después de la última obligación", () => {
+    const filas = ajustarFilasLibres(conDatos(8), contador());
+    expect(filas).toHaveLength(8 + FILAS_LIBRES);
+    expect(filas.slice(8).every((f) => !f.enUso)).toBe(true);
+    expect(primeraFilaLibre(filas)).toBe(8);
+  });
+
+  it("agrega una fila libre al escribir en las últimas", () => {
+    const filas = ajustarFilasLibres(conDatos(2), contador());
+    expect(filas).toHaveLength(FILAS_MINIMAS);
+    // Escribir en la tercera fila deja solo dos libres: aparece una más.
+    const escritas = filas.map((f, i) =>
+      i === 2 ? { ...f, enUso: true, obligacion: { ...f.obligacion, acreedor: "Tigo" } } : f,
+    );
+    const ajustadas = ajustarFilasLibres(escritas, contador(50));
+    expect(ajustadas).toHaveLength(6);
+    expect(ajustadas.at(-1)?.clave).toBe(50);
+    expect(ajustadas.length - primeraFilaLibre(ajustadas)).toBe(FILAS_LIBRES);
+  });
+
+  it("quita filas sobrantes sin tocar y conserva las que se están editando", () => {
+    const filas = [
+      ...conDatos(2),
+      fila(2, {}), // se borró lo que tenía: sigue en uso
+      ...Array.from({ length: 6 }, (_, i) => filaVacia(10 + i)),
+    ];
+    const ajustadas = ajustarFilasLibres(filas, contador());
+    expect(ajustadas.map((f) => f.clave)).toEqual([0, 1, 2, 10, 11]);
+  });
+
+  it("no quita filas por debajo del mínimo ni filas en uso", () => {
+    const enUso = [
+      fila(0, { acreedor: "A" }),
+      ...Array.from({ length: 5 }, (_, i) => fila(i + 1, {})),
+    ];
+    expect(ajustarFilasLibres(enUso, contador())).toHaveLength(6);
+    expect(ajustarFilasLibres([filaVacia(0)], contador())).toHaveLength(FILAS_MINIMAS);
+  });
+
+  it("la primera fila libre es la siguiente a la última con contenido", () => {
+    expect(primeraFilaLibre([])).toBe(0);
+    expect(
+      primeraFilaLibre([fila(0, { acreedor: "A" }), filaVacia(1), fila(2, { capital: 5 })]),
+    ).toBe(3);
+    expect(primeraFilaLibre([fila(0, { acreedor: "A" }), fila(1, { mora: "mas_90_dias" })])).toBe(
+      1,
+    );
   });
 
   it("solo guarda las filas con contenido", () => {
@@ -105,9 +153,10 @@ describe("pegar un bloque copiado del Excel", () => {
     const texto =
       "1\tDavivienda\tCredito Hipotecario\t$150.000.000\t\t$150.000.000\t> 90 días\t120\t87%\tNo\tHipoteca\tTERCERA\n" +
       "2\tBanco Agrario\tTarjeta de credito\t1.000.000\t50.000\t1.050.000\t< 90 días\t\t1%\tSí\tSin garantía\tQUINTA\n";
-    const filas = completarFilas([], contador(0));
+    const filas = ajustarFilasLibres([], contador(0));
     const resultado = pegarBloque(filas, leerPortapapeles(texto), 0, 0, contador(50));
     expect(resultado).toHaveLength(FILAS_MINIMAS);
+    expect(ajustarFilasLibres(resultado, contador(50))).toHaveLength(FILAS_MINIMAS);
     expect(resultado[0]).toMatchObject({
       enUso: true,
       obligacion: {
@@ -135,8 +184,61 @@ describe("pegar un bloque copiado del Excel", () => {
     expect(resultado[2]?.enUso).toBe(false);
   });
 
+  it("al pegar en ACREEDOR filas copiadas desde N° (o desde la columna A) descarta esas celdas", () => {
+    const desdeNumero =
+      "1\tDavivienda\tCredito Hipotecario\t$150.000.000\t\t$150.000.000\t> 90 días\t120\t87%\tNo\tHipoteca\tTERCERA\n" +
+      "\tBanco Agrario\t\t1.000.000\t50.000\t1.050.000\t< 90 días\t\t1%\tSí\tSin garantía\tQUINTA\n";
+    const desdeColumnaA = desdeNumero.replace(/^/gm, "\t").replace(/\t$/, "");
+    for (const texto of [desdeNumero, desdeColumnaA]) {
+      const filas = ajustarFilasLibres([], contador(0));
+      const resultado = pegarBloque(
+        filas,
+        leerPortapapeles(texto),
+        0,
+        columna("acreedor"),
+        contador(50),
+      );
+      expect(resultado[0]?.obligacion).toMatchObject({
+        acreedor: "Davivienda",
+        concepto: "Credito Hipotecario",
+        capital: 150_000_000,
+        intereses: 0,
+        mora: "mas_90_dias",
+        diasMora: 120,
+        descuentoNomina: false,
+        tipoGarantia: "hipoteca",
+        clase: "tercera",
+      });
+      expect(resultado[1]?.obligacion).toMatchObject({
+        acreedor: "Banco Agrario",
+        capital: 1_000_000,
+        intereses: 50_000,
+        mora: "menos_90_dias",
+        clase: "quinta",
+      });
+    }
+  });
+
+  it("no descarta celdas iniciales con datos aunque el bloque traiga columnas de más", () => {
+    const texto = "Tigo\tCelular\t300.000\t\t\t> 90 días\t95\t\tNo\tSin garantía\tQUINTA\tNota\n";
+    const resultado = pegarBloque(
+      [filaVacia(0)],
+      leerPortapapeles(texto),
+      0,
+      columna("acreedor"),
+      contador(50),
+    );
+    expect(resultado[0]?.obligacion).toMatchObject({
+      acreedor: "Tigo",
+      concepto: "Celular",
+      capital: 300_000,
+      diasMora: 95,
+      clase: "quinta",
+    });
+  });
+
   it("pega una columna suelta a partir de la celda activa y agrega filas si faltan", () => {
-    const filas = completarFilas([], contador(0), 2);
+    const filas = [filaVacia(0), filaVacia(1)];
     const resultado = pegarBloque(
       filas,
       leerPortapapeles("Tigo\nClaro\nMovistar"),
@@ -152,16 +254,5 @@ describe("pegar un bloque copiado del Excel", () => {
     const filas = [fila(0, { acreedor: "X", clase: "tercera" })];
     const resultado = pegarBloque(filas, [["sexta"]], 0, columna("clase"), contador());
     expect(resultado[0]?.obligacion.clase).toBe("tercera");
-  });
-});
-
-describe("fórmulas mostradas", () => {
-  it("usan el rango real de filas", () => {
-    const f = formulasHoja(20);
-    expect(f.pasivoTotal).toBe("=SUMA(G16:G35)");
-    expect(f.total(16)).toBe('=SI(E16+F16=0;"";E16+F16)');
-    expect(f.cantidadClase(39)).toBe("=CONTAR.SI($M$16:$M$35;B39)");
-    expect(formulasHoja(25).pasivoTotal).toBe("=SUMA(G16:G40)");
-    expect(f.costoProceso).toContain("372000");
   });
 });

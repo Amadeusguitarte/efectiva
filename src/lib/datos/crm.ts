@@ -1,6 +1,7 @@
 import "server-only";
 
 import { requerirAdmin } from "@/lib/auth/sesion";
+import { filtroBusqueda } from "@/lib/busqueda";
 import {
   VALORES_TIPO_TAREA,
   type CanalCrm,
@@ -151,14 +152,6 @@ export type CasoResumen = {
   tareasVencidas: number;
 };
 
-/** Limpia el texto para usarlo entre comillas en un filtro `or` de PostgREST. */
-function textoBusqueda(valor: string) {
-  return valor
-    .replace(/[,()*%"\\]/g, " ")
-    .trim()
-    .slice(0, 80);
-}
-
 function hoyBogota(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
 }
@@ -182,13 +175,8 @@ export async function listarCasosPipeline(filtros: FiltrosPipeline = {}) {
   else if (filtros.responsable) consulta = consulta.eq("responsable_id", filtros.responsable);
   if (filtros.canal) consulta = consulta.eq("origen", filtros.canal);
 
-  const termino = filtros.busqueda ? textoBusqueda(filtros.busqueda) : "";
-  if (termino) {
-    const patron = `"*${termino}*"`;
-    consulta = consulta.or(
-      ["nombre", "email", "telefono"].map((columna) => `${columna}.ilike.${patron}`).join(","),
-    );
-  }
+  const filtro = filtroBusqueda(["nombre", "email", "telefono"], filtros.busqueda ?? "");
+  if (filtro) consulta = consulta.or(filtro);
 
   const [etapas, casos, tareas] = await Promise.all([
     obtenerEtapas(),
@@ -378,13 +366,8 @@ export async function listarConversaciones(canal: CanalCrm, busqueda?: string) {
   consulta =
     canal === "whatsapp" ? consulta.not("telefono", "is", null) : consulta.not("email", "is", null);
 
-  const termino = busqueda ? textoBusqueda(busqueda) : "";
-  if (termino) {
-    const patron = `"*${termino}*"`;
-    consulta = consulta.or(
-      ["nombre", "email", "telefono"].map((columna) => `${columna}.ilike.${patron}`).join(","),
-    );
-  }
+  const filtro = filtroBusqueda(["nombre", "email", "telefono"], busqueda ?? "");
+  if (filtro) consulta = consulta.or(filtro);
 
   const [casos, ultimos] = await Promise.all([
     consulta,
@@ -654,18 +637,13 @@ export async function obtenerCredencialesCorreo() {
 export async function buscarClientesParaVincular(termino: string) {
   await requerirAdmin();
   const supabase = await createClient();
-  const limpio = textoBusqueda(termino);
+  const filtro = filtroBusqueda(["nombre_completo", "email", "telefono"], termino);
   let consulta = supabase
     .from("clientes")
     .select("id, nombre_completo, email")
     .order("created_at", { ascending: false })
     .limit(8);
-  if (limpio) {
-    const patron = `"*${limpio}*"`;
-    consulta = consulta.or(
-      ["nombre_completo", "email", "telefono"].map((c) => `${c}.ilike.${patron}`).join(","),
-    );
-  }
+  if (filtro) consulta = consulta.or(filtro);
   const { data, error } = await consulta;
   if (error) throw error;
   return data;

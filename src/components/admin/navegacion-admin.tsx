@@ -9,19 +9,27 @@ import {
   Mail,
   Menu,
   MessageCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings,
   Users,
   type LucideIcon,
 } from "lucide-react";
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 
+import isotipo from "@/assets/images/isotipo.png";
 import { Logo } from "@/components/marca/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { siteConfig } from "@/config/site";
+import { esTamanoMenu, type TamanoMenu } from "@/lib/preferencias-menu";
 import { cn } from "cn";
 
 type ItemNavegacion = {
@@ -66,37 +74,95 @@ const GRUPOS: GrupoNavegacion[] = [
 
 const PROXIMAMENTE = [{ nombre: "Programación de pagos", icono: CalendarClock }];
 
-function Enlaces({ alNavegar }: { alNavegar?: () => void }) {
+const OPCIONES_TAMANO: { valor: TamanoMenu; nombre: string }[] = [
+  { valor: "compacto", nombre: "Compacto" },
+  { valor: "normal", nombre: "Normal" },
+  { valor: "amplio", nombre: "Amplio" },
+];
+
+const ESTILO_TITULO_GRUPO =
+  "px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase";
+
+const ESTILO_FOCO = "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
+
+/** Línea fina que sustituye a los títulos de grupo cuando el menú está minimizado. */
+function SeparadorMinimizado() {
+  return <div aria-hidden className="mx-auto mb-1 h-px w-6 bg-border" />;
+}
+
+/**
+ * Con el menú minimizado, el nombre de cada icono aparece en un tooltip a la derecha. Expandido
+ * (o en el menú móvil) el nombre ya se ve: el tooltip queda cerrado de forma controlada, sin
+ * contenido ni `aria-describedby`. Siempre está montado para que el enlace no cambie de lugar en
+ * el árbol y conserve el foco al minimizar o expandir; al alternar se cierra.
+ */
+function TooltipMenu({
+  minimizado,
+  contenido,
+  children,
+}: {
+  minimizado: boolean;
+  contenido: ReactNode;
+  children: ReactNode;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const [minimizadoAntes, setMinimizadoAntes] = useState(minimizado);
+  if (minimizado !== minimizadoAntes) {
+    setMinimizadoAntes(minimizado);
+    setAbierto(false);
+  }
+  return (
+    <Tooltip open={minimizado && abierto} onOpenChange={(abrir) => setAbierto(minimizado && abrir)}>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      {minimizado ? (
+        <TooltipContent side="right" sideOffset={10}>
+          {contenido}
+        </TooltipContent>
+      ) : null}
+    </Tooltip>
+  );
+}
+
+function Enlaces({
+  alNavegar,
+  minimizado = false,
+}: {
+  alNavegar?: () => void;
+  minimizado?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Panel" className="flex flex-1 flex-col gap-6">
+    <nav aria-label="Panel" className={cn("flex flex-1 flex-col", minimizado ? "gap-2" : "gap-6")}>
       {GRUPOS.map((grupo, indice) => (
         <div key={grupo.titulo ?? indice} className="grid gap-1">
           {grupo.titulo ? (
-            <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground/80 uppercase">
-              {grupo.titulo}
-            </p>
+            <p className={minimizado ? "sr-only" : ESTILO_TITULO_GRUPO}>{grupo.titulo}</p>
           ) : null}
-          <ul className="grid gap-1">
+          {grupo.titulo && minimizado ? <SeparadorMinimizado /> : null}
+          <ul className={cn("grid gap-1", minimizado && "justify-items-center")}>
             {grupo.items.map(({ nombre, href, icono: Icono, activo }) => {
               const esActivo = activo ? activo(pathname) : pathname.startsWith(href);
               return (
                 <li key={href}>
-                  <Link
-                    href={href}
-                    onClick={alNavegar}
-                    aria-current={esActivo ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      esActivo
-                        ? "bg-primary text-primary-foreground shadow-soft"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                    )}
-                  >
-                    <Icono className="size-4" />
-                    {nombre}
-                  </Link>
+                  <TooltipMenu minimizado={minimizado} contenido={nombre}>
+                    <Link
+                      href={href}
+                      onClick={alNavegar}
+                      aria-current={esActivo ? "page" : undefined}
+                      className={cn(
+                        "flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors",
+                        ESTILO_FOCO,
+                        minimizado && "w-9 justify-center px-0",
+                        esActivo
+                          ? "bg-primary text-primary-foreground shadow-soft"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}
+                    >
+                      <Icono className="size-4 shrink-0" aria-hidden />
+                      <span className={cn(minimizado ? "sr-only" : "truncate")}>{nombre}</span>
+                    </Link>
+                  </TooltipMenu>
                 </li>
               );
             })}
@@ -105,42 +171,223 @@ function Enlaces({ alNavegar }: { alNavegar?: () => void }) {
       ))}
 
       <div className="grid gap-1">
-        <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground/80 uppercase">
-          Próximamente
-        </p>
-        <ul className="grid gap-1">
+        <p className={minimizado ? "sr-only" : ESTILO_TITULO_GRUPO}>Próximamente</p>
+        {minimizado ? <SeparadorMinimizado /> : null}
+        <ul className={cn("grid gap-1", minimizado && "justify-items-center")}>
           {PROXIMAMENTE.map(({ nombre, icono: Icono }) => (
-            <li
-              key={nombre}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground/60"
-            >
-              <Icono className="size-4" />
-              <span className="flex-1">{nombre}</span>
-              <Badge variant="outline" className="text-[10px] font-normal">
-                Fase 3
-              </Badge>
+            <li key={nombre}>
+              <TooltipMenu minimizado={minimizado} contenido={`${nombre} · Próximamente`}>
+                {/* Solo con el menú minimizado recibe foco, para poder leer su nombre en el tooltip. */}
+                <span
+                  tabIndex={minimizado ? 0 : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground/60",
+                    minimizado && cn("size-9 justify-center px-0 py-0", ESTILO_FOCO),
+                  )}
+                >
+                  <Icono className="size-4 shrink-0" aria-hidden />
+                  {minimizado ? (
+                    <span className="sr-only">{nombre} (próximamente, fase 3)</span>
+                  ) : (
+                    <>
+                      <span className="flex-1">{nombre}</span>
+                      <Badge variant="outline" className="text-[10px] font-normal">
+                        Fase 3
+                      </Badge>
+                    </>
+                  )}
+                </span>
+              </TooltipMenu>
             </li>
           ))}
         </ul>
       </div>
 
-      <Link
-        href="/"
-        target="_blank"
-        className="mt-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-      >
-        <ExternalLink className="size-4" />
-        Ver sitio web
-      </Link>
+      <TooltipMenu minimizado={minimizado} contenido="Ver sitio web">
+        <Link
+          href="/"
+          target="_blank"
+          className={cn(
+            "mt-auto flex h-9 items-center gap-3 rounded-lg px-3 text-sm whitespace-nowrap text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+            ESTILO_FOCO,
+            minimizado && "w-9 justify-center self-center px-0",
+          )}
+        >
+          <ExternalLink className="size-4 shrink-0" aria-hidden />
+          <span className={minimizado ? "sr-only" : undefined}>Ver sitio web</span>
+        </Link>
+      </TooltipMenu>
     </nav>
   );
 }
 
-export function BarraLateralAdmin() {
+function SelectorTamano({
+  tamano,
+  alCambiar,
+  refBotonMenu,
+}: {
+  tamano: TamanoMenu;
+  alCambiar: (tamano: TamanoMenu) => void;
+  /** Botón de minimizar/expandir, que recibe el foco si el selector desaparece con él dentro. */
+  refBotonMenu: RefObject<HTMLButtonElement | null>;
+}) {
+  const idEtiqueta = useId();
+  const refContenedor = useRef<HTMLDivElement>(null);
+
+  // Al minimizar con Ctrl+B el selector desaparece; si tenía el foco, se lo pasa al botón de
+  // minimizar/expandir en vez de dejarlo caer al <body>. La limpieza de un efecto de diseño corre
+  // antes de quitar el nodo del DOM, cuando todavía se sabe dónde estaba el foco.
+  useLayoutEffect(() => {
+    const contenedor = refContenedor.current;
+    // El botón es el mismo nodo con el menú expandido o minimizado.
+    const boton = refBotonMenu.current;
+    return () => {
+      if (contenedor?.contains(document.activeElement)) boton?.focus();
+    };
+  }, [refBotonMenu]);
+
   return (
-    <div className="flex h-full flex-col gap-8 overflow-y-auto px-4 py-6">
-      <Logo href="/admin" className="px-2" />
-      <Enlaces />
+    <div ref={refContenedor} className="shrink-0 border-t px-3 pt-3 pb-4">
+      <p id={idEtiqueta} className="mb-2 px-3 text-xs font-medium text-muted-foreground">
+        Tamaño del menú
+      </p>
+      {/* Control segmentado: una sola opción marcada (radio); las flechas recorren las opciones
+          y Espacio o Enter elige. Pulsar la opción marcada no la desmarca. */}
+      <ToggleGroup
+        type="single"
+        value={tamano}
+        onValueChange={(valor) => {
+          if (esTamanoMenu(valor)) alCambiar(valor);
+        }}
+        role="radiogroup"
+        aria-labelledby={idEtiqueta}
+        spacing={0.5}
+        size="sm"
+        className="w-full rounded-lg bg-muted p-0.5"
+      >
+        {OPCIONES_TAMANO.map(({ valor, nombre }) => (
+          <ToggleGroupItem
+            key={valor}
+            value={valor}
+            className={cn(
+              "h-7 min-w-0 flex-auto rounded-md px-1.5 text-[0.6875rem] text-foreground/80 hover:bg-background/60 hover:text-foreground",
+              "data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-soft",
+            )}
+          >
+            {nombre}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
+  );
+}
+
+/**
+ * Logo del menú: el mismo enlace en ambos estados (minimizado solo se ve el isotipo), para que
+ * conserve el foco al alternar. Reproduce el `Logo` oscuro de la marca.
+ */
+function LogoMenu({ minimizado }: { minimizado: boolean }) {
+  return (
+    <Link
+      href="/admin"
+      aria-label={`${siteConfig.name}, ir al inicio`}
+      className={cn("inline-flex min-w-0 shrink items-center gap-2.5 rounded-md", ESTILO_FOCO)}
+    >
+      <Image src={isotipo} alt="" className="h-8 w-auto shrink-0" sizes="40px" />
+      <span
+        className={cn(
+          "text-[0.95rem] leading-none font-extrabold tracking-tight text-navy uppercase",
+          minimizado && "hidden",
+        )}
+      >
+        Insolvencia <span className="text-primary">Efectiva</span>
+      </span>
+    </Link>
+  );
+}
+
+type BarraLateralAdminProps = {
+  minimizado: boolean;
+  tamano: TamanoMenu;
+  /** Id del contenedor del menú, para `aria-controls` del botón de minimizar. */
+  idMenu: string;
+  alAlternar: () => void;
+  alCambiarTamano: (tamano: TamanoMenu) => void;
+};
+
+export function BarraLateralAdmin({
+  minimizado,
+  tamano,
+  idMenu,
+  alAlternar,
+  alCambiarTamano,
+}: BarraLateralAdminProps) {
+  const accion = minimizado ? "Expandir menú" : "Minimizar menú";
+  const refBoton = useRef<HTMLButtonElement>(null);
+
+  return (
+    <div className="flex h-full flex-col">
+      {/*
+       * El botón conserva su posición en el árbol en ambos estados (solo cambia el diseño del
+       * contenedor) para no perder el foco del teclado al minimizar o expandir.
+       */}
+      <div
+        className={cn(
+          "flex shrink-0",
+          minimizado
+            ? "flex-col items-center gap-2"
+            : "h-16 items-center justify-between gap-2 border-b pr-3 pl-4",
+        )}
+      >
+        <div
+          className={cn(
+            "flex min-w-0 items-center",
+            minimizado && "h-16 w-full justify-center border-b",
+          )}
+        >
+          <LogoMenu minimizado={minimizado} />
+        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              ref={refBoton}
+              type="button"
+              variant="ghost"
+              size={minimizado ? "icon" : "icon-sm"}
+              onClick={alAlternar}
+              aria-label={accion}
+              aria-expanded={!minimizado}
+              aria-controls={idMenu}
+              aria-keyshortcuts="Control+B Meta+B"
+              className="text-muted-foreground"
+            >
+              {minimizado ? <PanelLeftOpen aria-hidden /> : <PanelLeftClose aria-hidden />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={10}>
+            {accion}{" "}
+            <kbd className="ml-1 rounded border border-background/30 px-1 font-sans text-[10px] opacity-80">
+              Ctrl+B
+            </kbd>
+          </TooltipContent>
+        </Tooltip>
+        {minimizado ? <SeparadorMinimizado /> : null}
+      </div>
+
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-3",
+          // Minimizado, en pantallas bajas la lista se desplaza sin barra visible: la barra
+          // ocuparía casi un cuarto de la columna y descentraría los iconos.
+          minimizado ? "[scrollbar-width:none] pt-1 pb-3 [&::-webkit-scrollbar]:hidden" : "py-5",
+        )}
+      >
+        <Enlaces minimizado={minimizado} />
+      </div>
+
+      {minimizado ? null : (
+        <SelectorTamano tamano={tamano} alCambiar={alCambiarTamano} refBotonMenu={refBoton} />
+      )}
     </div>
   );
 }
@@ -161,7 +408,9 @@ export function MenuMovilAdmin() {
         </SheetHeader>
         <div className="flex h-full flex-col gap-8 overflow-y-auto px-4 py-6">
           <Logo href="/admin" className="px-2" />
-          <Enlaces alNavegar={() => setAbierto(false)} />
+          <TooltipProvider>
+            <Enlaces alNavegar={() => setAbierto(false)} />
+          </TooltipProvider>
         </div>
       </SheetContent>
     </Sheet>

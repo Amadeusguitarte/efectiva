@@ -7,39 +7,45 @@ import {
   type MoraObligacion,
   type TipoGarantia,
 } from "./catalogos";
-import { PARAMETROS_DIAGNOSTICO } from "./parametros";
 
 /**
- * Lógica de la vista tipo hoja de cálculo de la matriz (la misma distribución de la hoja
- * «Diagnóstico Cliente» del Excel). Funciones puras: sin React ni DOM.
+ * Lógica de la tabla de obligaciones de la matriz: filas libres, filas que se guardan y pegado
+ * de bloques copiados del Excel «Diagnóstico Cliente». Funciones puras: sin React ni DOM.
  */
 
-/** Filas de obligaciones que muestra la hoja aunque estén vacías (como el Excel). */
-export const FILAS_MINIMAS = 20;
+/** Filas libres que la tabla mantiene siempre después de la última obligación. */
+export const FILAS_LIBRES = 3;
 
-/** Fila del Excel donde empieza la tabla de obligaciones (encabezado en la 15). */
-export const FILA_ENCABEZADO_TABLA = 15;
+/** Filas que muestra la tabla como mínimo, con o sin datos. */
+export const FILAS_MINIMAS = 5;
 
-/** Columnas editables de la tabla de obligaciones, en el orden del Excel. */
+/**
+ * Columnas de la tabla de obligaciones, en el orden del Excel (de N° a CLASE). El orden importa:
+ * al pegar, cada celda copiada cae en la columna que le corresponde.
+ */
 export const COLUMNAS_TABLA = [
-  { clave: "numero", letra: "B", titulo: "N°", editable: false },
-  { clave: "acreedor", letra: "C", titulo: "ACREEDOR", editable: true },
-  { clave: "concepto", letra: "D", titulo: "CONCEPTO / PRODUCTO", editable: true },
-  { clave: "capital", letra: "E", titulo: "CAPITAL", editable: true },
-  { clave: "intereses", letra: "F", titulo: "INTERESES / OTROS", editable: true },
-  { clave: "total", letra: "G", titulo: "TOTAL ADEUDADO", editable: false },
-  { clave: "mora", letra: "H", titulo: "MORA", editable: true },
-  { clave: "diasMora", letra: "I", titulo: "DÍAS MORA", editable: true },
-  { clave: "porcentaje", letra: "J", titulo: "% DE CADA DEUDA", editable: false },
-  { clave: "descuentoNomina", letra: "K", titulo: "DESCUENTO NÓMINA ACTIVO", editable: true },
-  { clave: "tipoGarantia", letra: "L", titulo: "TIPO GARANTÍA", editable: true },
-  { clave: "clase", letra: "M", titulo: "CLASE", editable: true },
+  { clave: "numero", titulo: "N°", editable: false },
+  { clave: "acreedor", titulo: "Acreedor", editable: true },
+  { clave: "concepto", titulo: "Concepto / producto", editable: true },
+  { clave: "capital", titulo: "Capital", editable: true },
+  { clave: "intereses", titulo: "Intereses / otros", editable: true },
+  { clave: "total", titulo: "Total adeudado", editable: false },
+  { clave: "mora", titulo: "Mora", editable: true },
+  { clave: "diasMora", titulo: "Días mora", editable: true },
+  { clave: "porcentaje", titulo: "% deuda", editable: false },
+  { clave: "descuentoNomina", titulo: "Desc. nómina", editable: true },
+  { clave: "tipoGarantia", titulo: "Garantía", editable: true },
+  { clave: "clase", titulo: "Clase", editable: true },
 ] as const;
 
 export type ClaveColumna = (typeof COLUMNAS_TABLA)[number]["clave"];
 
-/** Fila de la hoja: la obligación y si alguien ya escribió en ella. */
+/** Fila de la tabla: la obligación y si alguien ya escribió en ella. */
 export type FilaHoja = { clave: number; obligacion: ObligacionEntrada; enUso: boolean };
+
+export function filaVacia(clave: number): FilaHoja {
+  return { clave, obligacion: obligacionVacia(), enUso: false };
+}
 
 /** La fila tiene algo que la convierte en obligación (no solo listas desplegables). */
 export function filaConContenido(o: ObligacionEntrada): boolean {
@@ -57,16 +63,42 @@ export function filasIncluidas(filas: readonly FilaHoja[]): FilaHoja[] {
   return filas.filter((f) => f.enUso && filaConContenido(f.obligacion));
 }
 
-/** Completa con filas vacías hasta `minimo`. */
-export function completarFilas(
+/**
+ * Posición de la primera fila libre del final: la siguiente a la última fila con contenido
+ * (`filas.length` si no queda ninguna libre). Ahí escribe «Agregar obligación».
+ */
+export function primeraFilaLibre(filas: readonly FilaHoja[]): number {
+  let indice = filas.length;
+  while (indice > 0) {
+    const anterior = filas[indice - 1];
+    if (!anterior || filaConContenido(anterior.obligacion)) break;
+    indice -= 1;
+  }
+  return indice;
+}
+
+/**
+ * Deja siempre `libres` filas sin contenido al final de la tabla y al menos `minimo` filas en
+ * total: al escribir en las últimas filas aparecen filas nuevas. Las filas sobrantes del final se
+ * quitan solo si nadie las ha tocado, para no borrar la fila en la que se está escribiendo.
+ */
+export function ajustarFilasLibres(
   filas: readonly FilaHoja[],
   siguienteClave: () => number,
+  libres = FILAS_LIBRES,
   minimo = FILAS_MINIMAS,
 ): FilaHoja[] {
   const resultado = [...filas];
-  while (resultado.length < minimo) {
-    resultado.push({ clave: siguienteClave(), obligacion: obligacionVacia(), enUso: false });
+  const inicioLibres = primeraFilaLibre(resultado);
+  while (
+    resultado.length > minimo &&
+    resultado.length - inicioLibres > libres &&
+    resultado.at(-1)?.enUso === false
+  ) {
+    resultado.pop();
   }
+  const faltan = Math.max(libres - (resultado.length - inicioLibres), minimo - resultado.length, 0);
+  for (let i = 0; i < faltan; i += 1) resultado.push(filaVacia(siguienteClave()));
   return resultado;
 }
 
@@ -222,6 +254,28 @@ export function aplicarCelda(
   }
 }
 
+/** Celda que puede venir antes de ACREEDOR al copiar del Excel: vacía o un N° de fila. */
+const CELDA_NUMERO_FILA = /^\s*\d{0,4}\s*$/;
+
+/**
+ * Celdas del inicio de cada fila que sobran porque el bloque empieza antes de la columna donde se
+ * pega: filas copiadas desde N° (o desde la columna A, vacía en la hoja) y pegadas en ACREEDOR, la
+ * primera celda editable. Solo se descartan si todas son vacías o números de fila; un bloque que
+ * trae columnas de más a la derecha se pega tal cual (lo que sobra al final se ignora).
+ */
+export function celdasSobrantesAlInicio(
+  bloque: readonly (readonly string[])[],
+  columnaInicial: number,
+): number {
+  const ancho = Math.max(0, ...bloque.map((celdas) => celdas.length));
+  const sobran = ancho - (COLUMNAS_TABLA.length - columnaInicial);
+  if (sobran <= 0) return 0;
+  const descartables = bloque.every((celdas) =>
+    celdas.slice(0, sobran).every((celda) => CELDA_NUMERO_FILA.test(celda)),
+  );
+  return descartables ? sobran : 0;
+}
+
 /**
  * Pega un bloque copiado de Excel en la tabla a partir de la fila y columna indicadas.
  * Agrega filas si el bloque no cabe. Devuelve las filas nuevas.
@@ -234,53 +288,18 @@ export function pegarBloque(
   siguienteClave: () => number,
 ): FilaHoja[] {
   const resultado = [...filas];
-  bloque.forEach((celdas, desplazamiento) => {
+  const sobrantes = celdasSobrantesAlInicio(bloque, columnaInicial);
+  bloque.forEach((fila, desplazamiento) => {
     const indice = filaInicial + desplazamiento;
-    while (resultado.length <= indice) {
-      resultado.push({ clave: siguienteClave(), obligacion: obligacionVacia(), enUso: false });
-    }
+    while (resultado.length <= indice) resultado.push(filaVacia(siguienteClave()));
     const actual = resultado[indice];
     if (!actual) return;
     let obligacion = actual.obligacion;
-    celdas.forEach((texto, columna) => {
+    fila.slice(sobrantes).forEach((texto, columna) => {
       const definicion = COLUMNAS_TABLA[columnaInicial + columna];
       if (definicion?.editable) obligacion = aplicarCelda(obligacion, definicion.clave, texto);
     });
     resultado[indice] = { ...actual, obligacion, enUso: true };
   });
   return resultado;
-}
-
-/** Referencias de celda de la hoja, para la barra de fórmulas. */
-export function filaExcel(indice: number): number {
-  return FILA_ENCABEZADO_TABLA + 1 + indice;
-}
-
-/**
- * Fórmulas equivalentes a las del Excel (con nombres de función en español), ajustadas a las
- * reglas vigentes del motor. Solo se muestran; el cálculo real lo hace `calcularDiagnostico`.
- */
-export function formulasHoja(filas: number) {
-  const primera = filaExcel(0);
-  const ultima = filaExcel(Math.max(filas, 1) - 1);
-  const rango = (letra: string) => `$${letra}$${primera}:$${letra}$${ultima}`;
-  const { elegibilidad, gastosProceso } = PARAMETROS_DIAGNOSTICO;
-  const umbral = Math.round(elegibilidad.umbralPasivoEnMora * 100);
-  const gastos =
-    gastosProceso.porObligacion > 0
-      ? `${gastosProceso.fijos}+${gastosProceso.porObligacion}*CONTARA(C${primera}:C${ultima})`
-      : `${gastosProceso.fijos}`;
-  return {
-    pasivoTotal: `=SUMA(G${primera}:G${ultima})`,
-    honorarios: "=REDONDEAR(F5*F7;0)",
-    costoProceso: `=F8+${gastos}+SI(O(F6="Acuerdo de pago";F6="Acuerdo de pago bilateral";Y(F6="Liquidación patrimonial";I7="SI"));MAX(I8-I9;0);0)`,
-    valorCuota: '=SI.ERROR(REDONDEAR(F8/I5;0);"")',
-    tarifaCentro: '=SI.ERROR(BUSCARX(F5;Listas!$I$2:$I$9;Listas!$K$2:$K$9;"";-1);"")',
-    elegibilidad: `=SI(Y(CONTAR.SI(H${primera}:H${ultima};"> 90 días")>=${elegibilidad.minimoObligacionesEnMora};CONTARA(UNICOS(FILTRAR(C${primera}:C${ultima};H${primera}:H${ultima}="> 90 días")))>=${elegibilidad.minimoAcreedoresEnMora};SUMAR.SI(H${primera}:H${ultima};"> 90 días";G${primera}:G${ultima})/F5>=${umbral}%);"ELEGIBLE";"NO ELEGIBLE")`,
-    total: (fila: number) => `=SI(E${fila}+F${fila}=0;"";E${fila}+F${fila})`,
-    porcentaje: (fila: number) => `=SI(G${fila}="";"";G${fila}/$F$5)`,
-    cantidadClase: (fila: number) => `=CONTAR.SI(${rango("M")};B${fila})`,
-    totalClase: (fila: number) => `=SUMAR.SI(${rango("M")};B${fila};${rango("G")})`,
-    porcentajeClase: (fila: number) => `=SI.ERROR(D${fila}/$F$5;0)`,
-  };
 }

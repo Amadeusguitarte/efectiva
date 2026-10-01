@@ -1,6 +1,7 @@
 import "server-only";
 
 import { requerirAdmin } from "@/lib/auth/sesion";
+import { filtroBusqueda } from "@/lib/busqueda";
 import {
   ESTADOS_EN_CURSO,
   ESTADOS_PROPUESTA,
@@ -61,14 +62,6 @@ type FiltrosClientes = {
   pagina?: number;
 };
 
-/** Limpia el texto para usarlo como valor entrecomillado en un filtro `or` de PostgREST. */
-function textoBusqueda(valor: string) {
-  return valor
-    .replace(/[,()*%"\\]/g, " ")
-    .trim()
-    .slice(0, 80);
-}
-
 export async function listarClientes({ busqueda, estado, pagina = 1 }: FiltrosClientes) {
   await requerirAdmin();
   const supabase = await createClient();
@@ -85,15 +78,11 @@ export async function listarClientes({ busqueda, estado, pagina = 1 }: FiltrosCl
 
   if (estado) consulta = consulta.eq("propuestas.estado", estado);
 
-  const termino = busqueda ? textoBusqueda(busqueda) : "";
-  if (termino) {
-    const patron = `"*${termino}*"`;
-    consulta = consulta.or(
-      ["nombre_completo", "email", "numero_documento", "telefono"]
-        .map((columna) => `${columna}.ilike.${patron}`)
-        .join(","),
-    );
-  }
+  const filtro = filtroBusqueda(
+    ["nombre_completo", "email", "numero_documento", "telefono"],
+    busqueda ?? "",
+  );
+  if (filtro) consulta = consulta.or(filtro);
 
   const { data, count, error } = await consulta;
   if (error) throw error;

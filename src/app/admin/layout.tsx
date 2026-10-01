@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 
-import { BarraLateralAdmin, MenuMovilAdmin } from "@/components/admin/navegacion-admin";
+import { MarcoAdmin } from "@/components/admin/marco-admin";
+import { MenuMovilAdmin } from "@/components/admin/navegacion-admin";
 import { CampanaNotificaciones } from "@/components/plataforma/campana-notificaciones";
 import { MenuUsuario } from "@/components/plataforma/menu-usuario";
 import { requerirAdmin } from "@/lib/auth/sesion";
 import { obtenerNotificaciones } from "@/lib/datos/crm";
+import { COOKIE_MENU_ADMIN, leerPreferenciaMenu } from "@/lib/preferencias-menu";
 
 export const metadata: Metadata = {
   title: { default: "Panel", template: "%s | Panel · Insolvencia Efectiva" },
@@ -13,20 +16,17 @@ export const metadata: Metadata = {
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const usuario = await requerirAdmin();
-  const notificaciones = await obtenerNotificaciones(10).catch(() => ({
-    notificaciones: [],
-    noLeidas: 0,
-  }));
+  const [notificaciones, almacenCookies] = await Promise.all([
+    obtenerNotificaciones(10).catch(() => ({ notificaciones: [], noLeidas: 0 })),
+    cookies(),
+  ]);
+  // Minimizado y tamaño del menú lateral: se leen aquí para no parpadear al recargar.
+  const preferenciaMenu = leerPreferenciaMenu(almacenCookies.get(COOKIE_MENU_ADMIN)?.value);
 
   return (
-    <div className="min-h-dvh bg-surface-soft lg:grid lg:grid-cols-[16rem_1fr]">
-      <div className="hidden border-r bg-background lg:block print:hidden">
-        <aside className="sticky top-0 h-dvh">
-          <BarraLateralAdmin />
-        </aside>
-      </div>
-
-      <div className="flex min-w-0 flex-col">
+    <MarcoAdmin
+      preferenciaInicial={preferenciaMenu}
+      encabezado={
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background/90 px-4 backdrop-blur md:px-8 print:hidden">
           <div className="flex items-center gap-2">
             <MenuMovilAdmin />
@@ -42,10 +42,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 md:px-8 md:py-8 print:max-w-none print:p-0">
-          {children}
-        </main>
-      </div>
-    </div>
+      }
+    >
+      {children}
+    </MarcoAdmin>
   );
 }

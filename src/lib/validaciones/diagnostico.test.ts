@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { diagnosticoVacio, obligacionVacia } from "@/lib/diagnostico/calcular";
 import { erroresPorRuta } from "@/lib/acciones";
 
-import { diagnosticoSchema } from "./diagnostico";
+import { busquedaClientesSchema, diagnosticoSchema } from "./diagnostico";
 
 describe("diagnosticoSchema", () => {
   it("acepta un diagnóstico vacío y normaliza textos", () => {
@@ -55,5 +55,19 @@ describe("diagnosticoSchema", () => {
     expect(rutas).toEqual(
       expect.arrayContaining(["tipoServicio", "porcentajeHonorarios", "obligaciones.0.clase"]),
     );
+  });
+});
+
+describe("busquedaClientesSchema", () => {
+  it("recorta el texto y acepta la búsqueda vacía", () => {
+    expect(busquedaClientesSchema.parse("  Juan  ")).toBe("Juan");
+    expect(busquedaClientesSchema.parse("   ")).toBe("");
+  });
+
+  it("rechaza textos largos o que no son texto", () => {
+    expect(busquedaClientesSchema.safeParse("a".repeat(101)).success).toBe(false);
+    expect(busquedaClientesSchema.safeParse(` ${"a".repeat(100)} `).success).toBe(true);
+    expect(busquedaClientesSchema.safeParse(42).success).toBe(false);
+    expect(busquedaClientesSchema.safeParse(null).success).toBe(false);
   });
 });
