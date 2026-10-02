@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, PT_Sans } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { siteConfig, yearsOfExperience } from "@/config/site";
@@ -11,6 +11,15 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+});
+
+/** Tipografía del CRM del panel (la misma de Kommo, que el equipo ya conoce). */
+const ptSans = PT_Sans({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-pt-sans",
+  display: "swap",
+  preload: false,
 });
 
 const titulo = `${siteConfig.name} | ${siteConfig.shortDescription} - ${yearsOfExperience()} años de experiencia`;
@@ -45,7 +54,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-CO" data-scroll-behavior="smooth" className={inter.variable}>
+    <html
+      lang="es-CO"
+      data-scroll-behavior="smooth"
+      className={`${inter.variable} ${ptSans.variable}`}
+    >
       <body>
         {children}
         <Toaster position="top-center" richColors />

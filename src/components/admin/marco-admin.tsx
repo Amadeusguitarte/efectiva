@@ -11,7 +11,9 @@ import {
   type ReactNode,
 } from "react";
 
-import { BarraLateralAdmin } from "@/components/admin/navegacion-admin";
+import { usePathname } from "next/navigation";
+
+import { BarraLateralAdmin, type ContadoresMenu } from "@/components/admin/navegacion-admin";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ANCHO_MENU_MAXIMO,
@@ -48,6 +50,8 @@ type MarcoAdminProps = {
   preferenciaInicial: PreferenciaMenu;
   /** Barra superior del panel (menú móvil, notificaciones y menú de usuario). */
   encabezado: ReactNode;
+  /** Contadores rojos del menú (sin responder y tareas vencidas). */
+  contadores: ContadoresMenu;
   children: ReactNode;
 };
 
@@ -57,7 +61,14 @@ type MarcoAdminProps = {
  * borde derecho (también con las flechas del teclado; doble clic restablece el ancho). Si se
  * arrastra hasta casi cerrarlo, se minimiza.
  */
-export function MarcoAdmin({ preferenciaInicial, encabezado, children }: MarcoAdminProps) {
+export function MarcoAdmin({
+  preferenciaInicial,
+  encabezado,
+  contadores,
+  children,
+}: MarcoAdminProps) {
+  // El CRM ocupa toda la pantalla, como Kommo: sin márgenes ni ancho máximo y con su tipografía.
+  const pantallaCrm = usePathname().startsWith("/admin/crm");
   const [preferencia, setPreferencia] = useState(preferenciaInicial);
   // Ancho que marca el puntero mientras se arrastra la pestaña; null si no se arrastra.
   const [arrastre, setArrastre] = useState<number | null>(null);
@@ -178,7 +189,12 @@ export function MarcoAdmin({ preferenciaInicial, encabezado, children }: MarcoAd
             <div className="h-full overflow-hidden">
               {/* Ancho final fijo: durante la transición el contenido no se reacomoda, solo se recorta. */}
               <div className="h-full w-[calc(var(--ancho-menu)-1px)]">
-                <BarraLateralAdmin minimizado={minimizado} idMenu={ID_MENU} alAlternar={alternar} />
+                <BarraLateralAdmin
+                  minimizado={minimizado}
+                  idMenu={ID_MENU}
+                  alAlternar={alternar}
+                  contadores={contadores}
+                />
               </div>
             </div>
 
@@ -223,7 +239,13 @@ export function MarcoAdmin({ preferenciaInicial, encabezado, children }: MarcoAd
           {encabezado}
           {/* Tope de 120rem: hasta pantallas de 1920 px el contenido ocupa todo el ancho libre, así
               que minimizar o achicar el menú le da más espacio. Los formularios ya limitan su ancho. */}
-          <main className="mx-auto w-full max-w-[120rem] flex-1 px-4 py-6 md:px-8 md:py-8 print:max-w-none print:p-0">
+          <main
+            className={cn(
+              pantallaCrm
+                ? "flex min-h-0 w-full flex-1 flex-col font-crm text-crm-texto"
+                : "mx-auto w-full max-w-[120rem] flex-1 px-4 py-6 md:px-8 md:py-8 print:max-w-none print:p-0",
+            )}
+          >
             {children}
           </main>
         </div>

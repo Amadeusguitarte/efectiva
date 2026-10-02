@@ -65,6 +65,35 @@
   --clase-cuarta: #d9ead3;
   --clase-quinta: #d9eaf7;
   --clase-por-verificar: #e7e6e6;
+
+  /* CRM: estética de Kommo (el CRM que ya usa el equipo) */
+  --crm-panel: #203d49;
+  --crm-panel-hondo: #16303b;
+  --crm-panel-suave: #8fa3ab;
+  --crm-texto: #363b44;
+  --crm-texto-suave: #6f767a;
+  --crm-hora: #92989b;
+  --crm-seleccion: #2f6fd6;
+  --crm-seleccion-suave: #e2f1fe;
+  --crm-menu-activo: #e5eeff;
+  --crm-menu-activo-texto: #2f63c4;
+  --crm-contador: #ce3942;
+  --crm-etiqueta: #58b98f;
+  --crm-etiqueta-texto: #2f7d5a;
+  --crm-feed: #f5f5f5;
+  --crm-borde: #eaeaea;
+  --crm-borde-fuerte: #c5c5c5;
+  --crm-burbuja-salida: #0077b0;
+  --crm-burbuja-entrada: #f5f5f5;
+  --crm-whatsapp: #25d366;
+  --crm-filtro: #cfe3a7;
+  --crm-nota: #fff8dc;
+  --crm-avatar-1: #3f6fd1;
+  --crm-avatar-2: #2f8f68;
+  --crm-avatar-3: #a8641f;
+  --crm-avatar-4: #8a55b8;
+  --crm-avatar-5: #c24d4d;
+  --crm-avatar-6: #23807a;
   /* Versión intensa de cada clase, para barras e indicadores pequeños sobre fondo blanco */
   --clase-primera-intenso: #e06666;
   --clase-segunda-intenso: #f6b26b;
@@ -124,6 +153,37 @@
   --color-clase-cuarta: var(--clase-cuarta);
   --color-clase-quinta: var(--clase-quinta);
   --color-clase-por-verificar: var(--clase-por-verificar);
+
+  --color-crm-panel: var(--crm-panel);
+  --color-crm-panel-hondo: var(--crm-panel-hondo);
+  --color-crm-panel-suave: var(--crm-panel-suave);
+  --color-crm-texto: var(--crm-texto);
+  --color-crm-texto-suave: var(--crm-texto-suave);
+  --color-crm-hora: var(--crm-hora);
+  --color-crm-seleccion: var(--crm-seleccion);
+  --color-crm-seleccion-suave: var(--crm-seleccion-suave);
+  --color-crm-menu-activo: var(--crm-menu-activo);
+  --color-crm-menu-activo-texto: var(--crm-menu-activo-texto);
+  --color-crm-contador: var(--crm-contador);
+  --color-crm-etiqueta: var(--crm-etiqueta);
+  --color-crm-etiqueta-texto: var(--crm-etiqueta-texto);
+  --color-crm-feed: var(--crm-feed);
+  --color-crm-borde: var(--crm-borde);
+  --color-crm-borde-fuerte: var(--crm-borde-fuerte);
+  --color-crm-burbuja-salida: var(--crm-burbuja-salida);
+  --color-crm-burbuja-entrada: var(--crm-burbuja-entrada);
+  --color-crm-whatsapp: var(--crm-whatsapp);
+  --color-crm-filtro: var(--crm-filtro);
+  --color-crm-nota: var(--crm-nota);
+  --color-crm-avatar-1: var(--crm-avatar-1);
+  --color-crm-avatar-2: var(--crm-avatar-2);
+  --color-crm-avatar-3: var(--crm-avatar-3);
+  --color-crm-avatar-4: var(--crm-avatar-4);
+  --color-crm-avatar-5: var(--crm-avatar-5);
+  --color-crm-avatar-6: var(--crm-avatar-6);
+
+  /* Tipografía del CRM: PT Sans, la de Kommo. */
+  --font-crm: var(--font-pt-sans), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --color-clase-primera-intenso: var(--clase-primera-intenso);
   --color-clase-segunda-intenso: var(--clase-segunda-intenso);
   --color-clase-tercera-intenso: var(--clase-tercera-intenso);

@@ -3,12 +3,14 @@
 import {
   CalendarClock,
   CheckSquare,
+  ChevronDown,
   Columns3,
   ExternalLink,
   LayoutDashboard,
   Mail,
   Menu,
   MessageCircle,
+  MessagesSquare,
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
@@ -19,7 +21,7 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 import isotipo from "@/assets/images/isotipo.png";
 import { Logo } from "@/components/marca/logo";
@@ -30,15 +32,29 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { siteConfig } from "@/config/site";
 import { cn } from "cn";
 
+/** Contadores en rojo del menú (como en Kommo): mensajes sin responder y tareas vencidas. */
+export type ContadoresMenu = {
+  chat: number;
+  correo: number;
+  tareas: number;
+};
+
 type ItemNavegacion = {
   nombre: string;
   href: Route;
   icono: LucideIcon;
   /** Decide si el enlace está activo; por defecto, cuando la ruta empieza por `href`. */
   activo?: (pathname: string) => boolean;
+  contador?: keyof ContadoresMenu;
 };
 
-type GrupoNavegacion = { titulo?: string; items: ItemNavegacion[] };
+type GrupoNavegacion = {
+  /** Título pequeño en mayúsculas sobre el grupo (con separación). */
+  titulo?: string;
+  /** Grupo desplegable con un elemento padre, como «Comunicaciones» en Kommo. */
+  plegable?: { nombre: string; icono: LucideIcon };
+  items: ItemNavegacion[];
+};
 
 const GRUPOS: GrupoNavegacion[] = [
   {
@@ -48,7 +64,18 @@ const GRUPOS: GrupoNavegacion[] = [
     ],
   },
   {
-    titulo: "CRM",
+    plegable: { nombre: "Comunicaciones", icono: MessagesSquare },
+    items: [
+      {
+        nombre: "Inbox de chat",
+        href: "/admin/crm/whatsapp",
+        icono: MessageCircle,
+        contador: "chat",
+      },
+      { nombre: "Inbox de correo", href: "/admin/crm/correo", icono: Mail, contador: "correo" },
+    ],
+  },
+  {
     items: [
       {
         nombre: "Pipeline",
@@ -59,9 +86,7 @@ const GRUPOS: GrupoNavegacion[] = [
           p.startsWith("/admin/crm/casos") ||
           p.startsWith("/admin/crm/nuevo"),
       },
-      { nombre: "WhatsApp", href: "/admin/crm/whatsapp", icono: MessageCircle },
-      { nombre: "Correo", href: "/admin/crm/correo", icono: Mail },
-      { nombre: "Tareas", href: "/admin/crm/tareas", icono: CheckSquare },
+      { nombre: "Tareas", href: "/admin/crm/tareas", icono: CheckSquare, contador: "tareas" },
     ],
   },
   {
@@ -115,54 +140,200 @@ function TooltipMenu({
   );
 }
 
+/** Contador rojo de Kommo; con el menú minimizado, un globo sobre el icono. */
+function Contador({ valor, minimizado }: { valor: number; minimizado: boolean }) {
+  if (valor <= 0) return null;
+  const texto = valor > 99 ? "99+" : String(valor);
+  return (
+    <span
+      className={cn(
+        "rounded-full bg-crm-contador font-semibold text-white tabular-nums",
+        minimizado
+          ? "absolute -top-1 -right-1 min-w-4 px-1 text-center text-[10px] leading-4"
+          : "ml-auto min-w-6 px-1.5 text-center text-[11px] leading-5",
+      )}
+    >
+      {texto}
+    </span>
+  );
+}
+
+function EnlaceMenu({
+  item,
+  pathname,
+  minimizado,
+  contadores,
+  alNavegar,
+  hijo = false,
+}: {
+  item: ItemNavegacion;
+  pathname: string;
+  minimizado: boolean;
+  contadores: ContadoresMenu;
+  alNavegar?: () => void;
+  /** Elemento dentro de un grupo desplegable: va con sangría, como en Kommo. */
+  hijo?: boolean;
+}) {
+  const { nombre, href, icono: Icono, activo, contador } = item;
+  const esActivo = activo ? activo(pathname) : pathname.startsWith(href);
+  const valor = contador ? contadores[contador] : 0;
+  return (
+    <TooltipMenu minimizado={minimizado} contenido={valor > 0 ? `${nombre} (${valor})` : nombre}>
+      <Link
+        href={href}
+        onClick={alNavegar}
+        aria-current={esActivo ? "page" : undefined}
+        className={cn(
+          "relative flex h-9 items-center gap-3 rounded-md px-3 text-sm whitespace-nowrap transition-colors",
+          ESTILO_FOCO,
+          minimizado && "w-9 justify-center px-0",
+          hijo && !minimizado && "pl-10",
+          esActivo
+            ? "bg-crm-menu-activo font-semibold text-crm-menu-activo-texto"
+            : "text-crm-texto hover:bg-crm-feed",
+        )}
+      >
+        {hijo && !minimizado ? null : <Icono className="size-4 shrink-0" aria-hidden />}
+        <span className={cn(minimizado ? "sr-only" : "truncate")}>{nombre}</span>
+        {valor > 0 ? <span className="sr-only">, {valor} pendientes</span> : null}
+        <Contador valor={valor} minimizado={minimizado} />
+      </Link>
+    </TooltipMenu>
+  );
+}
+
+/** Grupo desplegable («Comunicaciones»): abierto por defecto y siempre que una hoja esté activa. */
+function GrupoPlegable({
+  grupo,
+  pathname,
+  minimizado,
+  contadores,
+  alNavegar,
+}: {
+  grupo: GrupoNavegacion & { plegable: NonNullable<GrupoNavegacion["plegable"]> };
+  pathname: string;
+  minimizado: boolean;
+  contadores: ContadoresMenu;
+  alNavegar?: () => void;
+}) {
+  const [abierto, setAbierto] = useState(true);
+  const idLista = useId();
+  const { nombre, icono: Icono } = grupo.plegable;
+  const pendientes = grupo.items.reduce(
+    (total, item) => total + (item.contador ? contadores[item.contador] : 0),
+    0,
+  );
+
+  // Minimizado no hay padre: los iconos de las hojas quedan a la vista.
+  if (minimizado) {
+    return (
+      <ul className="grid justify-items-center gap-1">
+        {grupo.items.map((item) => (
+          <li key={item.href}>
+            <EnlaceMenu
+              item={item}
+              pathname={pathname}
+              minimizado
+              contadores={contadores}
+              alNavegar={alNavegar}
+            />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <div className="grid gap-1">
+      <button
+        type="button"
+        onClick={() => setAbierto((valor) => !valor)}
+        aria-expanded={abierto}
+        aria-controls={idLista}
+        className={cn(
+          "flex h-9 items-center gap-3 rounded-md px-3 text-sm whitespace-nowrap text-crm-texto transition-colors hover:bg-crm-feed",
+          ESTILO_FOCO,
+        )}
+      >
+        <Icono className="size-4 shrink-0" aria-hidden />
+        <span className="truncate">{nombre}</span>
+        {!abierto && pendientes > 0 ? <Contador valor={pendientes} minimizado={false} /> : null}
+        <ChevronDown
+          className={cn(
+            "size-4 shrink-0 text-crm-hora transition-transform",
+            !abierto || pendientes === 0 ? "ml-auto" : "",
+            abierto && "rotate-180",
+          )}
+          aria-hidden
+        />
+      </button>
+      <ul id={idLista} hidden={!abierto} className="grid gap-1">
+        {grupo.items.map((item) => (
+          <li key={item.href}>
+            <EnlaceMenu
+              item={item}
+              pathname={pathname}
+              minimizado={false}
+              contadores={contadores}
+              alNavegar={alNavegar}
+              hijo
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function Enlaces({
   alNavegar,
   minimizado = false,
+  contadores,
 }: {
   alNavegar?: () => void;
   minimizado?: boolean;
+  contadores: ContadoresMenu;
 }) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Panel" className={cn("flex flex-1 flex-col", minimizado ? "gap-2" : "gap-6")}>
+    <nav aria-label="Panel" className="flex flex-1 flex-col gap-1">
       {GRUPOS.map((grupo, indice) => (
-        <div key={grupo.titulo ?? indice} className="grid gap-1">
+        <div
+          key={grupo.titulo ?? grupo.plegable?.nombre ?? indice}
+          className={cn("grid gap-1", grupo.titulo && (minimizado ? "mt-2" : "mt-5"))}
+        >
           {grupo.titulo ? (
             <p className={minimizado ? "sr-only" : ESTILO_TITULO_GRUPO}>{grupo.titulo}</p>
           ) : null}
           {grupo.titulo && minimizado ? <SeparadorMinimizado /> : null}
-          <ul className={cn("grid gap-1", minimizado && "justify-items-center")}>
-            {grupo.items.map(({ nombre, href, icono: Icono, activo }) => {
-              const esActivo = activo ? activo(pathname) : pathname.startsWith(href);
-              return (
-                <li key={href}>
-                  <TooltipMenu minimizado={minimizado} contenido={nombre}>
-                    <Link
-                      href={href}
-                      onClick={alNavegar}
-                      aria-current={esActivo ? "page" : undefined}
-                      className={cn(
-                        "flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors",
-                        ESTILO_FOCO,
-                        minimizado && "w-9 justify-center px-0",
-                        esActivo
-                          ? "bg-primary text-primary-foreground shadow-soft"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                      )}
-                    >
-                      <Icono className="size-4 shrink-0" aria-hidden />
-                      <span className={cn(minimizado ? "sr-only" : "truncate")}>{nombre}</span>
-                    </Link>
-                  </TooltipMenu>
+          {grupo.plegable ? (
+            <GrupoPlegable
+              grupo={{ ...grupo, plegable: grupo.plegable }}
+              pathname={pathname}
+              minimizado={minimizado}
+              contadores={contadores}
+              alNavegar={alNavegar}
+            />
+          ) : (
+            <ul className={cn("grid gap-1", minimizado && "justify-items-center")}>
+              {grupo.items.map((item) => (
+                <li key={item.href}>
+                  <EnlaceMenu
+                    item={item}
+                    pathname={pathname}
+                    minimizado={minimizado}
+                    contadores={contadores}
+                    alNavegar={alNavegar}
+                  />
                 </li>
-              );
-            })}
-          </ul>
+              ))}
+            </ul>
+          )}
         </div>
       ))}
 
-      <div className="grid gap-1">
+      <div className={cn("grid gap-1", minimizado ? "mt-2" : "mt-5")}>
         <p className={minimizado ? "sr-only" : ESTILO_TITULO_GRUPO}>Próximamente</p>
         {minimizado ? <SeparadorMinimizado /> : null}
         <ul className={cn("grid gap-1", minimizado && "justify-items-center")}>
@@ -241,10 +412,16 @@ type BarraLateralAdminProps = {
   minimizado: boolean;
   /** Id del contenedor del menú, para `aria-controls` del botón de minimizar. */
   idMenu: string;
+  contadores: ContadoresMenu;
   alAlternar: () => void;
 };
 
-export function BarraLateralAdmin({ minimizado, idMenu, alAlternar }: BarraLateralAdminProps) {
+export function BarraLateralAdmin({
+  minimizado,
+  idMenu,
+  alAlternar,
+  contadores,
+}: BarraLateralAdminProps) {
   const accion = minimizado ? "Expandir menú" : "Minimizar menú";
 
   return (
@@ -303,13 +480,13 @@ export function BarraLateralAdmin({ minimizado, idMenu, alAlternar }: BarraLater
           minimizado ? "[scrollbar-width:none] pt-1 pb-3 [&::-webkit-scrollbar]:hidden" : "py-5",
         )}
       >
-        <Enlaces minimizado={minimizado} />
+        <Enlaces minimizado={minimizado} contadores={contadores} />
       </div>
     </div>
   );
 }
 
-export function MenuMovilAdmin() {
+export function MenuMovilAdmin({ contadores }: { contadores: ContadoresMenu }) {
   const [abierto, setAbierto] = useState(false);
 
   return (
@@ -326,7 +503,7 @@ export function MenuMovilAdmin() {
         <div className="flex h-full flex-col gap-8 overflow-y-auto px-4 py-6">
           <Logo href="/admin" className="px-2" />
           <TooltipProvider>
-            <Enlaces alNavegar={() => setAbierto(false)} />
+            <Enlaces alNavegar={() => setAbierto(false)} contadores={contadores} />
           </TooltipProvider>
         </div>
       </SheetContent>

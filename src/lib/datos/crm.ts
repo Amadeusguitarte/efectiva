@@ -653,21 +653,33 @@ export async function buscarClientesParaVincular(termino: string) {
 export async function obtenerResumenCrm() {
   await requerirAdmin();
   const supabase = await createClient();
-  const [abiertos, sinResponder, tareasVencidas] = await Promise.all([
-    supabase
-      .from("crm_casos")
-      .select("id, etapa:crm_etapas!inner(cierre)", { count: "exact", head: true })
-      .is("etapa.cierre", null),
-    supabase
-      .from("crm_casos")
-      .select("id", { count: "exact", head: true })
-      .eq("ultimo_mensaje_direccion", "entrada"),
-    supabase
-      .from("crm_tareas")
-      .select("id", { count: "exact", head: true })
-      .eq("estado", "pendiente")
-      .lt("vence_at", hoyBogota()),
-  ]);
+  const [abiertos, sinResponder, tareasVencidas, sinResponderChat, sinResponderCorreo] =
+    await Promise.all([
+      supabase
+        .from("crm_casos")
+        .select("id, etapa:crm_etapas!inner(cierre)", { count: "exact", head: true })
+        .is("etapa.cierre", null),
+      supabase
+        .from("crm_casos")
+        .select("id", { count: "exact", head: true })
+        .eq("ultimo_mensaje_direccion", "entrada"),
+      supabase
+        .from("crm_tareas")
+        .select("id", { count: "exact", head: true })
+        .eq("estado", "pendiente")
+        .lt("vence_at", hoyBogota()),
+      // Por bandeja: las conversaciones que aparecen en cada inbox y esperan respuesta.
+      supabase
+        .from("crm_casos")
+        .select("id", { count: "exact", head: true })
+        .eq("ultimo_mensaje_direccion", "entrada")
+        .not("telefono", "is", null),
+      supabase
+        .from("crm_casos")
+        .select("id", { count: "exact", head: true })
+        .eq("ultimo_mensaje_direccion", "entrada")
+        .not("email", "is", null),
+    ]);
   if (abiertos.error) throw abiertos.error;
   if (sinResponder.error) throw sinResponder.error;
   if (tareasVencidas.error) throw tareasVencidas.error;
@@ -675,5 +687,7 @@ export async function obtenerResumenCrm() {
     casosAbiertos: abiertos.count ?? 0,
     sinResponder: sinResponder.count ?? 0,
     tareasVencidas: tareasVencidas.count ?? 0,
+    sinResponderChat: sinResponderChat.count ?? 0,
+    sinResponderCorreo: sinResponderCorreo.count ?? 0,
   };
 }
