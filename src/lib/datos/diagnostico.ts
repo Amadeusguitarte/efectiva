@@ -99,6 +99,30 @@ export async function obtenerDiagnosticoCliente(clienteId: string) {
 
 export type DiagnosticoCliente = NonNullable<Awaited<ReturnType<typeof obtenerDiagnosticoCliente>>>;
 
+/**
+ * Lo mínimo para el encabezado de las hojas del diagnóstico que no usan la matriz (la hoja
+ * «Listas»): el cliente, el estado de su propuesta y la fecha del último guardado de su matriz.
+ */
+export async function obtenerEncabezadoDiagnostico(clienteId: string) {
+  await requerirAdmin();
+  const supabase = await createClient();
+
+  const { data: cliente, error } = await supabase
+    .from("clientes")
+    .select("id, nombre_completo, propuestas(estado), diagnosticos(updated_at)")
+    .eq("id", clienteId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!cliente) return null;
+
+  return {
+    cliente: { id: cliente.id, nombre: cliente.nombre_completo },
+    estadoPropuesta: cliente.propuestas?.estado ?? null,
+    actualizadoAt: cliente.diagnosticos?.updated_at ?? null,
+  };
+}
+
 /** Fechas que cuentan como actividad de un cliente: su ficha, su matriz y su propuesta. */
 const ORDEN_ACTIVIDAD = ["updated_at", "diagnosticos(updated_at)", "propuestas(updated_at)"];
 

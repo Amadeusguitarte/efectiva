@@ -2,16 +2,12 @@
 
 import {
   ChevronDown,
-  ChevronLeft,
   CircleAlert,
   ClipboardCheck,
-  FileText,
   Loader2,
   Save,
   TriangleAlert,
 } from "lucide-react";
-import type { Route } from "next";
-import Link from "next/link";
 import {
   startTransition,
   useActionState,
@@ -21,7 +17,6 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
-  type ReactNode,
 } from "react";
 import { toast } from "sonner";
 
@@ -51,16 +46,17 @@ import {
   pegarBloque,
   type FilaHoja,
 } from "@/lib/diagnostico/hoja";
-import { PARAMETROS_DIAGNOSTICO } from "@/lib/diagnostico/parametros";
+import { opcionesCuotas, PARAMETROS_DIAGNOSTICO } from "@/lib/diagnostico/parametros";
 import type { ResultadoBusquedaClientes } from "@/lib/diagnostico/selector-cliente";
-import { formatearPesos } from "@/lib/formato";
+import { formatearPesos, plural } from "@/lib/formato";
+import type { EstadoPropuesta } from "@/lib/propuestas/estados";
 
 import { AlertasDiagnostico } from "../alertas-diagnostico";
 import { FilaCalculada, FilaCampo, SelectNativo, TarjetaMatriz } from "./controles";
+import { EncabezadoDashboard } from "./encabezado-dashboard";
 import { GuiaClases } from "./guia-clases";
 import { ResumenIndicadores } from "./resumen-indicadores";
 import { ListaAcreedores, ResumenPorClase } from "./resumenes";
-import { SelectorCliente } from "./selector-cliente";
 import { TablaObligaciones } from "./tabla-obligaciones";
 
 type MatrizDiagnosticoProps = {
@@ -72,13 +68,10 @@ type MatrizDiagnosticoProps = {
   fechaActualizacion: string | null;
   clienteId: string;
   nombreCliente: string;
-  rutaCliente: Route;
   /** Búsqueda de la pestaña «Cambiar de cliente» (Server Action). */
   buscarClientes: (termino: string) => Promise<ResultadoBusquedaClientes>;
-  /** Estado de la propuesta del cliente (insignia), si tiene. */
-  estadoPropuesta?: ReactNode;
-  /** Hoja DATOS PROPUESTA; null mientras la matriz no se haya guardado nunca. */
-  rutaDatosPropuesta: Route | null;
+  /** Estado de la propuesta del cliente, si tiene. */
+  estadoPropuesta: EstadoPropuesta | null;
 };
 
 type Datos = Omit<DiagnosticoEntrada, "obligaciones">;
@@ -119,10 +112,8 @@ export function MatrizDiagnostico({
   fechaActualizacion,
   clienteId,
   nombreCliente,
-  rutaCliente,
   buscarClientes,
   estadoPropuesta,
-  rutaDatosPropuesta,
 }: MatrizDiagnosticoProps) {
   const [estado, accionFormulario, pendiente] = useActionState(accion, ESTADO_INICIAL);
   const errores = estado.errores ?? {};
@@ -212,10 +203,24 @@ export function MatrizDiagnostico({
   useEffect(() => {
     if (!hayCambios) return;
     const avisar = (evento: BeforeUnloadEvent) => evento.preventDefault();
-    // Los enlaces internos (Link) no disparan beforeunload: se confirma al hacer clic.
+    // Los enlaces internos (Link, como las pestañas de hojas) no disparan beforeunload: se
+    // confirma al hacer clic. Abrir en otra pestaña (Ctrl, Mayús…) o volver a la misma página
+    // (la pestaña activa) no descarta los cambios.
     const confirmarSalida = (evento: MouseEvent) => {
-      const enlace = evento.target instanceof Element ? evento.target.closest("a[href]") : null;
+      if (evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) return;
+      const enlace =
+        evento.target instanceof Element
+          ? evento.target.closest<HTMLAnchorElement>("a[href]")
+          : null;
       if (!enlace || enlace.getAttribute("target") === "_blank") return;
+      const destino = new URL(enlace.href, window.location.href);
+      if (
+        destino.origin === window.location.origin &&
+        destino.pathname === window.location.pathname &&
+        destino.search === window.location.search
+      ) {
+        return;
+      }
       if (!window.confirm("Hay cambios sin guardar. ¿Quieres salir sin guardarlos?")) {
         evento.preventDefault();
         evento.stopPropagation();
@@ -352,72 +357,28 @@ export function MatrizDiagnostico({
       <input type="hidden" name="datos" value={serializado} />
       <input type="hidden" name="actualizado_en" value={actualizadoAt ?? ""} />
 
-      {/* Encabezado propio (no EncabezadoPagina): las acciones bajan de línea según el ancho
-          real del contenido, que cambia con el tamaño del menú lateral. El enlace de regreso
-          sigue el patrón de la ficha del cliente y de «Datos para la propuesta». */}
-      <header className="flex flex-col gap-4 @4xl:flex-row @4xl:items-end @4xl:justify-between">
-        <div className="grid min-w-0 justify-items-start gap-1">
-          <Link
-            href={rutaCliente}
-            className="mb-3 inline-flex max-w-full items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ChevronLeft className="size-4 shrink-0" aria-hidden />
-            <span className="truncate">{nombreCliente}</span>
-          </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            Matriz de diagnóstico
-          </h1>
-          {/* El nombre del cliente está en la pestaña «Cambiar de cliente», justo debajo. */}
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-            {estadoPropuesta ? (
-              <>
-                {estadoPropuesta}
-                <span aria-hidden className="hidden sm:inline">
-                  ·
-                </span>
-              </>
-            ) : null}
-            <span>
-              {fechaActualizacion
-                ? `Actualizada el ${fechaActualizacion}`
-                : "Aún no se ha guardado"}
-            </span>
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2 print:hidden">
-          <GuiaClases />
-          {rutaDatosPropuesta ? (
-            <Button asChild variant="outline">
-              <Link href={rutaDatosPropuesta}>
-                <FileText aria-hidden />
-                Datos para la propuesta
-              </Link>
-            </Button>
-          ) : null}
-          {botonGuardar}
-        </div>
-      </header>
-
-      {estado.mensaje && !estado.ok ? (
-        <div ref={refMensaje}>
-          <MensajeFormulario estado={estado} />
-        </div>
-      ) : null}
-
-      {/* La pestaña del cliente va unida a la franja de resumen, como una pestaña de carpeta. */}
-      <div className="grid min-w-0">
-        <SelectorCliente
-          clienteId={clienteId}
-          nombreCliente={nombreCliente}
-          hayCambios={hayCambios}
-          buscarClientes={buscarClientes}
-        />
-        <ResumenIndicadores
-          resultado={resultado}
-          tipoServicio={datos.tipoServicio}
-          className="rounded-tl-none"
-        />
-      </div>
+      <EncabezadoDashboard
+        hoja="diagnostico"
+        cliente={{ id: clienteId, nombre: nombreCliente }}
+        estadoPropuesta={estadoPropuesta}
+        fechaActualizacion={fechaActualizacion}
+        buscarClientes={buscarClientes}
+        hayCambios={hayCambios}
+        acciones={
+          <>
+            <GuiaClases />
+            {botonGuardar}
+          </>
+        }
+        aviso={
+          estado.mensaje && !estado.ok ? (
+            <div ref={refMensaje}>
+              <MensajeFormulario estado={estado} />
+            </div>
+          ) : null
+        }
+        franja={<ResumenIndicadores resultado={resultado} tipoServicio={datos.tipoServicio} />}
+      />
 
       {alertas.length > 0 ? (
         <details
@@ -430,13 +391,13 @@ export function MatrizDiagnostico({
             {cantidadErrores > 0 ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-danger-soft px-2 py-0.5 text-xs font-medium text-destructive">
                 <CircleAlert className="size-3.5" aria-hidden />
-                {cantidadErrores === 1 ? "1 error" : `${cantidadErrores} errores`}
+                {plural(cantidadErrores, "error", "errores")}
               </span>
             ) : null}
             {cantidadAvisos > 0 ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning">
                 <TriangleAlert className="size-3.5" aria-hidden />
-                {cantidadAvisos === 1 ? "1 aviso" : `${cantidadAvisos} avisos`}
+                {plural(cantidadAvisos, "aviso", "avisos")}
               </span>
             ) : null}
             <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -619,12 +580,9 @@ export function MatrizDiagnostico({
                 aria-invalid={Boolean(errores.cuotasHonorarios) || undefined}
                 className="tabular-nums"
               >
-                {Array.from(
-                  { length: PARAMETROS_DIAGNOSTICO.honorarios.cuotasMaximas },
-                  (_, i) => i + 1,
-                ).map((n) => (
+                {opcionesCuotas().map((n) => (
                   <option key={n} value={n}>
-                    {n === 1 ? "1 cuota" : `${n} cuotas`}
+                    {plural(n, "cuota", "cuotas")}
                   </option>
                 ))}
               </SelectNativo>

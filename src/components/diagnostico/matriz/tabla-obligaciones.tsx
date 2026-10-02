@@ -1,7 +1,7 @@
 "use client";
 
 import { ClipboardPaste, Keyboard, Plus, Trash2 } from "lucide-react";
-import { useEffect, useRef, type ClipboardEvent, type KeyboardEvent } from "react";
+import { useRef, type ClipboardEvent, type KeyboardEvent } from "react";
 
 import { InputPesos } from "@/components/formularios/input-pesos";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,12 @@ import {
   type ClaveColumna,
   type FilaHoja,
 } from "@/lib/diagnostico/hoja";
-import { formatearPesos, formatearPorcentaje } from "@/lib/formato";
+import { formatearPesos, formatearPorcentaje, plural } from "@/lib/formato";
 import { cn } from "cn";
 
 import { FONDO_CLASE } from "./colores-clase";
-import { CONTROL_TABLA, FILA_TOTAL, SelectNativo, TarjetaMatriz } from "./controles";
+import { Contador, CONTROL_TABLA, FILA_TOTAL, SelectNativo, TarjetaMatriz } from "./controles";
+import { SOMBRA_DESBORDE, useDesborde } from "./tabla-desplazable";
 
 type TablaObligacionesProps = {
   filas: readonly FilaHoja[];
@@ -93,10 +94,6 @@ const FIJA_CLASE =
   "@2xl/tarjeta:sticky @2xl/tarjeta:right-8 @2xl/tarjeta:z-10 @2xl/tarjeta:shadow-[inset_1px_0_0_var(--hoja-cuadricula)]";
 const FIJA_ACCIONES = "@2xl/tarjeta:sticky @2xl/tarjeta:right-0 @2xl/tarjeta:z-10";
 
-/** Sombreado que avisa de columnas ocultas a un lado (visible según `data-desborde-*`). */
-const SOMBRA_DESBORDE =
-  "pointer-events-none absolute inset-y-0 z-20 w-8 from-hoja-titulo/15 to-transparent opacity-0 transition-opacity duration-200";
-
 function esValor<T extends string>(valores: readonly { valor: T }[], valor: string): valor is T {
   return valores.some((v) => v.valor === valor);
 }
@@ -136,27 +133,7 @@ export function TablaObligaciones({
   const totalCapital = resultado.obligaciones.reduce((suma, o) => suma + o.capital, 0);
   const totalIntereses = resultado.obligaciones.reduce((suma, o) => suma + o.intereses, 0);
 
-  // Marca en el contenedor si quedan columnas ocultas a la izquierda o a la derecha, para
-  // mostrar el sombreado de ese lado. Se escribe en el DOM (sin estado) al desplazar o redimensionar.
-  useEffect(() => {
-    const marco = refMarco.current;
-    const desplazable = refDesplazable.current;
-    if (!marco || !desplazable) return;
-    const medir = () => {
-      const { scrollLeft, clientWidth, scrollWidth } = desplazable;
-      marco.dataset.desbordeIzquierda = String(scrollLeft > 1);
-      marco.dataset.desbordeDerecha = String(scrollLeft + clientWidth < scrollWidth - 1);
-    };
-    desplazable.addEventListener("scroll", medir, { passive: true });
-    // El observador también mide al empezar a observar.
-    const observador = new ResizeObserver(medir);
-    observador.observe(desplazable);
-    if (desplazable.firstElementChild) observador.observe(desplazable.firstElementChild);
-    return () => {
-      desplazable.removeEventListener("scroll", medir);
-      observador.disconnect();
-    };
-  }, []);
+  useDesborde(refMarco, refDesplazable);
 
   /** «Agregar obligación» lleva a la primera fila libre (siempre hay una al final). */
   function irAFilaLibre() {
@@ -232,11 +209,7 @@ export function TablaObligaciones({
       tono="titulo"
       extra={
         <>
-          <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold tabular-nums">
-            {resultado.numeroObligaciones === 1
-              ? "1 registrada"
-              : `${resultado.numeroObligaciones} registradas`}
-          </span>
+          <Contador>{plural(resultado.numeroObligaciones, "registrada", "registradas")}</Contador>
           <span className="hidden items-center gap-1.5 text-xs text-white/75 md:inline-flex">
             <ClipboardPaste className="size-3.5" aria-hidden />
             Puedes pegar filas copiadas del Excel
@@ -563,7 +536,7 @@ export function TablaObligaciones({
         </div>
       </div>
 
-      <p className="flex items-center gap-2 border-t border-hoja-cuadricula/70 bg-surface-soft px-4 py-2 text-xs text-muted-foreground">
+      <p className="flex items-center gap-2 border-t border-hoja-cuadricula/70 bg-surface-soft px-4 py-2 text-xs text-foreground/80">
         <Keyboard className="size-3.5 shrink-0" aria-hidden />
         <span>
           Enter pasa a la fila siguiente y Mayús+Enter a la anterior; las flechas se mueven entre

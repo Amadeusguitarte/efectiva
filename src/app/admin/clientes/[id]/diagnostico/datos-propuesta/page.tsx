@@ -1,16 +1,17 @@
-import { ChevronLeft, Pencil } from "lucide-react";
-import type { Metadata, Route } from "next";
-import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { BotonesDatosPropuesta } from "@/components/diagnostico/botones-datos-propuesta";
-import { DatosPropuesta } from "@/components/diagnostico/datos-propuesta";
-import { EncabezadoPagina } from "@/components/plataforma/encabezado-pagina";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { DatosPropuesta, DatosPropuestaSinMatriz } from "@/components/diagnostico/datos-propuesta";
+import { EncabezadoDashboard } from "@/components/diagnostico/matriz/encabezado-dashboard";
+import { ResumenIndicadores } from "@/components/diagnostico/matriz/resumen-indicadores";
 import { obtenerDiagnosticoCliente } from "@/lib/datos/diagnostico";
+import { rutaHoja } from "@/lib/diagnostico/hojas";
 import { datosPropuestaComoTexto } from "@/lib/diagnostico/propuesta";
+import { formatearFechaHora } from "@/lib/formato";
+
+import { buscarClientesMatriz } from "../acciones";
 
 export const metadata: Metadata = {
   title: "Datos para la propuesta",
@@ -25,56 +26,38 @@ export default async function DatosPropuestaPage({
   const diagnostico = await obtenerDiagnosticoCliente(id);
   if (!diagnostico) notFound();
 
-  const { cliente, datosPropuesta } = diagnostico;
-  const rutaMatriz = `/admin/clientes/${cliente.id}/diagnostico` as Route;
+  const { cliente, datosPropuesta, existe } = diagnostico;
 
   return (
-    <>
-      <div className="print:hidden">
-        <Link
-          href={rutaMatriz}
-          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="size-4" />
-          Matriz de diagnóstico
-        </Link>
+    <div className="@container grid min-w-0 gap-6">
+      {/* Al imprimir solo sale la hoja, con su propio encabezado. */}
+      <EncabezadoDashboard
+        hoja="datos-propuesta"
+        cliente={{ id: cliente.id, nombre: cliente.nombre }}
+        estadoPropuesta={cliente.propuesta?.estado ?? null}
+        fechaActualizacion={
+          existe && diagnostico.actualizadoAt ? formatearFechaHora(diagnostico.actualizadoAt) : null
+        }
+        buscarClientes={buscarClientesMatriz}
+        acciones={
+          existe ? (
+            <BotonesDatosPropuesta texto={datosPropuestaComoTexto(datosPropuesta)} />
+          ) : undefined
+        }
+        franja={
+          existe ? (
+            <ResumenIndicadores
+              resultado={diagnostico.resultado}
+              tipoServicio={diagnostico.entrada.tipoServicio}
+            />
+          ) : (
+            <DatosPropuestaSinMatriz rutaDiagnostico={rutaHoja(cliente.id, "diagnostico")} />
+          )
+        }
+        className="print:hidden"
+      />
 
-        <EncabezadoPagina
-          titulo="Datos para la propuesta"
-          descripcion={
-            diagnostico.existe
-              ? "Resumen del diagnóstico con el formato que usa el prompt de la propuesta. Imprímelo o cópialo como texto."
-              : "Primero registra la matriz de diagnóstico del cliente."
-          }
-          acciones={
-            <>
-              <Button asChild variant="outline">
-                <Link href={rutaMatriz}>
-                  <Pencil />
-                  Editar matriz
-                </Link>
-              </Button>
-              {diagnostico.existe ? (
-                <BotonesDatosPropuesta texto={datosPropuestaComoTexto(datosPropuesta)} />
-              ) : null}
-            </>
-          }
-        />
-      </div>
-
-      {diagnostico.existe ? (
-        <Card className="print:border-0 print:shadow-none">
-          <CardContent className="print:px-0">
-            <DatosPropuesta datos={datosPropuesta} />
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="text-sm text-muted-foreground">
-            Este cliente todavía no tiene diagnóstico.
-          </CardContent>
-        </Card>
-      )}
-    </>
+      {existe ? <DatosPropuesta datos={datosPropuesta} /> : null}
+    </div>
   );
 }

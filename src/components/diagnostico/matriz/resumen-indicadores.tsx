@@ -4,13 +4,26 @@ import type { ReactNode } from "react";
 import type { ResultadoDiagnostico } from "@/lib/diagnostico/calcular";
 import { INFO_TIPO_SERVICIO, type TipoServicio } from "@/lib/diagnostico/catalogos";
 import { PARAMETROS_DIAGNOSTICO } from "@/lib/diagnostico/parametros";
-import { formatearPesos, formatearPorcentaje, formatearPorcentajeHonorarios } from "@/lib/formato";
+import {
+  formatearPesos,
+  formatearPorcentaje,
+  formatearPorcentajeHonorarios,
+  plural,
+} from "@/lib/formato";
 import { cn } from "cn";
 
-const plural = (cantidad: number, singular: string, varios: string) =>
-  `${cantidad} ${cantidad === 1 ? singular : varios}`;
+/** Rótulo en mayúsculas de la franja. */
+export const ROTULO = "text-[11px] font-semibold tracking-wider text-white/70 uppercase";
 
-const ROTULO = "text-[11px] font-semibold tracking-wider text-white/70 uppercase";
+/**
+ * Piezas de la franja azul oscura (el azul del título del Excel) que encabeza cada hoja del
+ * dashboard: el contenedor, la fila superior y la cuadrícula de indicadores.
+ */
+export const FRANJA = "@container overflow-hidden rounded-xl bg-hoja-titulo text-white shadow-soft";
+export const FRANJA_SUPERIOR =
+  "grid gap-x-6 gap-y-3 border-b border-white/15 px-4 py-3.5 @4xl:grid-cols-[minmax(0,1fr)_auto] @6xl:px-5";
+export const FRANJA_LATERAL = "grid content-center gap-1 border-white/15 @4xl:border-l @4xl:pl-6";
+export const FRANJA_INDICADORES = "grid grid-cols-2 gap-px bg-white/15 @4xl:grid-cols-4";
 
 /**
  * Porcentaje del pasivo en mora con un decimal, truncado (no redondeado) para que nunca muestre
@@ -28,7 +41,8 @@ const PASTILLA = {
   sin_datos: { texto: "SIN DATOS", clase: "bg-white/15 text-white", Icono: CircleDashed },
 } as const;
 
-function Indicador({
+/** Indicador de la franja: rótulo, valor grande y una línea de detalle. */
+export function Indicador({
   etiqueta,
   valor,
   children,
@@ -84,14 +98,8 @@ export function ResumenIndicadores({
   ];
 
   return (
-    <section
-      aria-label="Resumen del diagnóstico"
-      className={cn(
-        "@container overflow-hidden rounded-xl bg-hoja-titulo text-white shadow-soft",
-        className,
-      )}
-    >
-      <div className="grid gap-x-6 gap-y-3 border-b border-white/15 px-4 py-3.5 @4xl:grid-cols-[minmax(0,1fr)_auto] @6xl:px-5">
+    <section aria-label="Resumen del diagnóstico" className={cn(FRANJA, className)}>
+      <div className={FRANJA_SUPERIOR}>
         <div className="grid gap-2.5">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <p className={ROTULO}>Elegibilidad preliminar</p>
@@ -131,7 +139,7 @@ export function ResumenIndicadores({
             })}
           </ul>
         </div>
-        <p className="grid content-center gap-1 border-white/15 @4xl:border-l @4xl:pl-6">
+        <p className={FRANJA_LATERAL}>
           <span className={ROTULO}>Tipo de servicio</span>
           <span className={cn("text-base font-semibold", !tipoServicio && "text-white/60 italic")}>
             {tipoServicio ? INFO_TIPO_SERVICIO[tipoServicio].etiqueta : "Sin definir"}
@@ -139,7 +147,7 @@ export function ResumenIndicadores({
         </p>
       </div>
 
-      <dl className="grid grid-cols-2 gap-px bg-white/15 @4xl:grid-cols-4">
+      <dl className={FRANJA_INDICADORES}>
         <Indicador etiqueta="Pasivo total" valor={formatearPesos(resultado.pasivoTotal)}>
           {plural(resultado.numeroObligaciones, "obligación", "obligaciones")}
         </Indicador>

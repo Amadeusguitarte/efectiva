@@ -120,7 +120,8 @@ export type ResultadoDiagnostico = {
   alertas: Alerta[];
 };
 
-const MORA_MAYOR_90: MoraObligacion = "mas_90_dias";
+/** Única categoría de mora que cuenta para la elegibilidad preliminar. */
+export const MORA_MAYOR_90: MoraObligacion = "mas_90_dias";
 
 const redondearPesos = (valor: number) => Math.round(valor);
 

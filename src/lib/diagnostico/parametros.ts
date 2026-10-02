@@ -77,6 +77,13 @@ export const PARAMETROS_DIAGNOSTICO: ParametrosDiagnostico = {
   ],
 };
 
+/** Opciones de la lista de cuotas de honorarios, de 1 al máximo (como la columna de la hoja «Listas»). */
+export function opcionesCuotas(
+  maximo: number = PARAMETROS_DIAGNOSTICO.honorarios.cuotasMaximas,
+): number[] {
+  return Array.from({ length: Math.max(0, Math.floor(maximo)) }, (_, i) => i + 1);
+}
+
 /**
  * Tarifa del centro de conciliación para un pasivo. Devuelve también si el pasivo supera el
  * último rango definido (se aplica la última tarifa, pero conviene verificarla).

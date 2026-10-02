@@ -21,6 +21,13 @@ export const CONTROL_FORMULARIO =
 export const CONTROL_TABLA =
   "h-8 w-full min-w-0 scroll-mt-20 rounded-md border border-transparent bg-transparent px-2 text-[13px] shadow-none transition-[color,box-shadow,background-color] outline-none md:text-[13px] placeholder:text-muted-foreground/80 hover:border-hoja-encabezado/30 hover:bg-background/70 focus:border-hoja-encabezado focus:bg-background focus:ring-2 focus:ring-hoja-encabezado/25 focus-visible:border-hoja-encabezado focus-visible:ring-2 focus-visible:ring-hoja-encabezado/25 aria-invalid:border-destructive aria-invalid:bg-danger-soft aria-invalid:ring-destructive/20";
 
+/** Tablas de solo lectura de las tarjetas: cabecera azul claro y la cuadrícula gris del Excel. */
+export const CABECERA_TABLA = "border-b border-hoja-cuadricula bg-hoja-etiqueta text-foreground";
+export const ENCABEZADO_TABLA =
+  "px-3 py-2 text-[11px] leading-tight font-semibold tracking-wide whitespace-nowrap uppercase";
+export const CELDA_TABLA = "px-3 py-2";
+export const FILA_TABLA = "border-b border-hoja-cuadricula/70";
+
 /** Fila TOTAL de las tablas de la matriz: el amarillo del Excel, suavizado. */
 export const FILA_TOTAL =
   "border-t-2 border-hoja-total-borde bg-hoja-total font-bold text-foreground";
@@ -68,7 +75,7 @@ export function TarjetaMatriz({
   children,
 }: {
   id: string;
-  titulo: string;
+  titulo: ReactNode;
   /** Contenido a la derecha del título (contadores, botones). */
   extra?: ReactNode;
   /** "titulo": azul oscuro del título del Excel; "encabezado": azul de sus secciones. */
@@ -85,8 +92,9 @@ export function TarjetaMatriz({
       )}
     >
       <div
+        data-tono={tono}
         className={cn(
-          "flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 text-white",
+          "group/cabecera flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 text-white",
           tono === "titulo" ? "bg-hoja-titulo" : "bg-hoja-encabezado",
         )}
       >
@@ -97,6 +105,19 @@ export function TarjetaMatriz({
       </div>
       {children}
     </section>
+  );
+}
+
+/**
+ * Contador de la cabecera de una `TarjetaMatriz` («6 clases», «3 registradas»). Sobre el azul de
+ * las secciones lleva un fondo más oscuro, porque el blanco translúcido deja el texto en 3,6:1;
+ * sobre el azul oscuro del título basta el blanco translúcido.
+ */
+export function Contador({ children }: { children: ReactNode }) {
+  return (
+    <span className="rounded-full bg-hoja-titulo/55 px-2.5 py-0.5 text-xs font-semibold tabular-nums group-data-[tono=titulo]/cabecera:bg-white/15">
+      {children}
+    </span>
   );
 }
 
@@ -165,6 +186,32 @@ export function FilaCampo({
           </p>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+/** Fila etiqueta | valor de solo lectura dentro de un `<dl>` (hojas «Datos para la propuesta» y «Listas»). */
+export function FilaDato({
+  etiqueta,
+  destacado = false,
+  children,
+}: {
+  etiqueta: ReactNode;
+  destacado?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className={FILA}>
+      <dt className={ETIQUETA_FILA}>{etiqueta}</dt>
+      <dd
+        className={cn(
+          VALOR_FILA,
+          "px-3 text-sm break-words whitespace-pre-line",
+          destacado && "font-semibold tabular-nums",
+        )}
+      >
+        {children}
+      </dd>
     </div>
   );
 }

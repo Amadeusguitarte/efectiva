@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowLeftRight,
   ArrowRight,
   Check,
   ChevronDown,
@@ -11,7 +12,6 @@ import {
   Table2,
   X,
 } from "lucide-react";
-import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -28,6 +28,7 @@ import { EstadoBadge } from "@/components/propuestas/estado-badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+import { rutaHoja, type HojaDiagnostico } from "@/lib/diagnostico/hojas";
 import {
   moverIndice,
   type ClienteSelector,
@@ -43,26 +44,28 @@ const AVISO_CAMBIOS = "Hay cambios sin guardar. ¿Quieres cambiar de cliente sin
 const ERROR_CONEXION = "No pudimos cargar los clientes. Revisa tu conexión e inténtalo de nuevo.";
 
 /**
- * Cliente cuya pestaña recibe el foco al montarse. Al elegir otro cliente, la matriz se vuelve a
- * montar entera (`key={cliente.id}` en la página) y el foco caería en <body>: la pestaña nueva lo
- * recupera, y el lector de pantalla anuncia el nombre del cliente que se abrió.
+ * Cliente cuyo botón «Cambiar de cliente» recibe el foco al montarse. Al elegir otro cliente se abre
+ * otra página (o la matriz se vuelve a montar entera, `key={cliente.id}`) y el foco caería en
+ * <body>: el botón nuevo lo recupera, y el lector de pantalla anuncia el cliente que se abrió.
  */
-let pestanaPorEnfocar: string | null = null;
+let botonPorEnfocar: string | null = null;
 
-function enfocarPestanaAlMontar(clienteId: string) {
-  pestanaPorEnfocar = clienteId;
+function enfocarBotonAlMontar(clienteId: string) {
+  botonPorEnfocar = clienteId;
 }
 
-/** Si la pestaña de este cliente debe recibir el foco; lo consume para que ocurra una sola vez. */
+/** Si el botón de este cliente debe recibir el foco; lo consume para que ocurra una sola vez. */
 function tomarFocoPendiente(clienteId: string): boolean {
-  if (pestanaPorEnfocar !== clienteId) return false;
-  pestanaPorEnfocar = null;
+  if (botonPorEnfocar !== clienteId) return false;
+  botonPorEnfocar = null;
   return true;
 }
 
 type SelectorClienteProps = {
   clienteId: string;
   nombreCliente: string;
+  /** Hoja abierta: al elegir otro cliente se abre la misma hoja de ese cliente. */
+  hoja: HojaDiagnostico;
   /** La matriz tiene cambios sin guardar: se pide confirmación antes de cambiar de cliente. */
   hayCambios: boolean;
   /** Server Action de búsqueda; sin texto devuelve los clientes más recientes. */
@@ -72,13 +75,15 @@ type SelectorClienteProps = {
 type Resultados = { termino: string; clientes: ClienteSelector[] };
 
 /**
- * Pestaña «Cambiar de cliente» unida a la franja de resumen de la matriz. Al abrirla despliega un
+ * Botón «Cambiar de cliente» del encabezado de las hojas del diagnóstico. Al abrirlo despliega un
  * buscador (combobox accesible: flechas, Enter y Esc) con los clientes recientes o los resultados
- * de la búsqueda, y abre la matriz del cliente elegido.
+ * de la búsqueda, y abre la misma hoja (diagnóstico, datos para la propuesta o listas) del cliente
+ * elegido.
  */
 export function SelectorCliente({
   clienteId,
   nombreCliente,
+  hoja,
   hayCambios,
   buscarClientes,
 }: SelectorClienteProps) {
@@ -87,7 +92,7 @@ export function SelectorCliente({
   const idLista = `${id}-lista`;
   const idTitulo = `${id}-titulo`;
   const idOpcion = (cliente: ClienteSelector) => `${id}-opcion-${cliente.id}`;
-  const refPestana = useRef<HTMLButtonElement>(null);
+  const refBoton = useRef<HTMLButtonElement>(null);
   const refEntrada = useRef<HTMLInputElement>(null);
   const refLista = useRef<HTMLDivElement>(null);
 
@@ -108,7 +113,7 @@ export function SelectorCliente({
   const termino = texto.trim();
 
   useEffect(() => {
-    if (tomarFocoPendiente(clienteId)) refPestana.current?.focus();
+    if (tomarFocoPendiente(clienteId)) refBoton.current?.focus();
   }, [clienteId]);
 
   useEffect(() => {
@@ -193,9 +198,9 @@ export function SelectorCliente({
     }
     if (hayCambios && !window.confirm(AVISO_CAMBIOS)) return;
     cambiarAbierto(false);
-    enfocarPestanaAlMontar(cliente.id);
+    enfocarBotonAlMontar(cliente.id);
     iniciarNavegacion(() => {
-      router.push(`/admin/clientes/${cliente.id}/diagnostico` as Route);
+      router.push(rutaHoja(cliente.id, hoja));
     });
   }
 
@@ -362,38 +367,23 @@ export function SelectorCliente({
     <Popover open={abierto} onOpenChange={cambiarAbierto}>
       <PopoverTrigger asChild>
         <button
-          ref={refPestana}
+          ref={refBoton}
           type="button"
           aria-busy={navegando || undefined}
-          className="group relative flex max-w-[calc(100%_-_0.75rem)] min-w-0 items-center gap-3 justify-self-start rounded-t-xl bg-hoja-titulo py-2.5 pr-2.5 pl-3 text-left text-white outline-none focus-visible:ring-2 focus-visible:ring-hoja-franja focus-visible:ring-inset sm:min-w-72 sm:pl-4"
+          className="group inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-hoja-encabezado/30 bg-card pr-2 pl-2.5 text-[13px] font-semibold text-hoja-titulo shadow-xs transition-colors outline-none hover:border-hoja-encabezado/60 hover:bg-hoja-etiqueta focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[state=open]:border-hoja-encabezado/60 data-[state=open]:bg-hoja-etiqueta print:hidden"
         >
-          <span
-            aria-hidden
-            className="grid size-9 shrink-0 place-items-center rounded-full bg-hoja-franja text-[13px] font-bold text-hoja-titulo ring-white/30 transition-shadow group-hover:ring-2"
-          >
-            {iniciales(nombreCliente)}
-          </span>
-          <span className="grid min-w-0 leading-tight">
-            <span className="text-[11px] font-semibold tracking-wider text-white/70 uppercase print:hidden">
-              {navegando ? "Abriendo cliente…" : "Cambiar de cliente"}
-            </span>
-            <span className="truncate text-[15px] font-semibold">{nombreCliente}</span>
-          </span>
-          <span
-            aria-hidden
-            className="ml-auto grid size-7 shrink-0 place-items-center rounded-md bg-white/10 transition-colors group-hover:bg-white/20 group-data-[state=open]:bg-white/20 print:hidden"
-          >
-            {navegando ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <ChevronDown className="size-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-            )}
-          </span>
-          {/* Curva entre la pestaña y el borde superior de la franja, como una pestaña de carpeta. */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute bottom-0 left-full size-3 bg-hoja-titulo [mask-image:radial-gradient(circle_at_100%_0,transparent_0.75rem,black_calc(0.75rem_+_0.5px))]"
-          />
+          <ArrowLeftRight className="size-3.5 shrink-0" aria-hidden />
+          {navegando ? "Abriendo cliente…" : "Cambiar de cliente"}
+          {/* Al volver a montarse tras el cambio, el foco llega aquí y se anuncia el cliente. */}
+          <span className="sr-only"> (cliente actual: {nombreCliente})</span>
+          {navegando ? (
+            <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden />
+          ) : (
+            <ChevronDown
+              className="size-3.5 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+              aria-hidden
+            />
+          )}
         </button>
       </PopoverTrigger>
 

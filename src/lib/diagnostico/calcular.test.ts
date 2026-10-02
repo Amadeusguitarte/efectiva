@@ -9,7 +9,7 @@ import {
   type DiagnosticoEntrada,
   type ObligacionEntrada,
 } from "./calcular";
-import { PARAMETROS_DIAGNOSTICO, tarifaCentroConciliacion } from "./parametros";
+import { opcionesCuotas, PARAMETROS_DIAGNOSTICO, tarifaCentroConciliacion } from "./parametros";
 
 function obligacion(datos: Partial<ObligacionEntrada>): ObligacionEntrada {
   return { ...obligacionVacia(), ...datos };
@@ -438,5 +438,14 @@ describe("utilidades", () => {
       fueraDeRango: true,
     });
     expect(tarifaCentroConciliacion(-1)).toEqual({ valor: 0, fueraDeRango: false });
+  });
+
+  it("lista las cuotas de honorarios de 1 al máximo", () => {
+    const cuotas = opcionesCuotas();
+    expect(cuotas).toHaveLength(PARAMETROS_DIAGNOSTICO.honorarios.cuotasMaximas);
+    expect(cuotas[0]).toBe(1);
+    expect(cuotas.at(-1)).toBe(PARAMETROS_DIAGNOSTICO.honorarios.cuotasMaximas);
+    expect(opcionesCuotas(3)).toEqual([1, 2, 3]);
+    expect(opcionesCuotas(0)).toEqual([]);
   });
 });

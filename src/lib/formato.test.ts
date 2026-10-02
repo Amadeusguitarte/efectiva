@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { yearsOfExperience, whatsappUrl } from "@/config/site";
 
-import { formatearFecha, iniciales, numeroWhatsApp, primerNombre } from "./formato";
+import { formatearFecha, iniciales, numeroWhatsApp, plural, primerNombre } from "./formato";
 
 describe("formato", () => {
   it("usa la zona horaria de Colombia", () => {
@@ -24,6 +24,12 @@ describe("formato", () => {
 
   it("obtiene el primer nombre", () => {
     expect(primerNombre("  María José Pérez")).toBe("María");
+  });
+
+  it("concuerda la cantidad con el sustantivo", () => {
+    expect(plural(1, "cuota", "cuotas")).toBe("1 cuota");
+    expect(plural(0, "cuota", "cuotas")).toBe("0 cuotas");
+    expect(plural(12, "obligación", "obligaciones")).toBe("12 obligaciones");
   });
 });
 

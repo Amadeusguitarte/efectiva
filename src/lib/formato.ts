@@ -82,3 +82,8 @@ const porcentajeCO = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 }
 export function formatearPorcentajeHonorarios(porcentaje: number): string {
   return `${porcentajeCO.format(porcentaje)} %`;
 }
+
+/** Cantidad con el sustantivo en singular o plural: (1, "cuota", "cuotas") -> "1 cuota". */
+export function plural(cantidad: number, singular: string, varios: string): string {
+  return `${cantidad} ${cantidad === 1 ? singular : varios}`;
+}

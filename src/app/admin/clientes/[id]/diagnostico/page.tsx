@@ -1,9 +1,8 @@
-import type { Metadata, Route } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { MatrizDiagnostico } from "@/components/diagnostico/matriz/matriz-diagnostico";
-import { EstadoBadge } from "@/components/propuestas/estado-badge";
 import { obtenerDiagnosticoCliente } from "@/lib/datos/diagnostico";
 import { formatearFechaHora } from "@/lib/formato";
 
@@ -39,16 +38,8 @@ export default async function DiagnosticoPage({
       }
       clienteId={cliente.id}
       nombreCliente={cliente.nombre}
-      rutaCliente={`/admin/clientes/${cliente.id}` as Route}
       buscarClientes={buscarClientesMatriz}
-      estadoPropuesta={
-        cliente.propuesta ? <EstadoBadge estado={cliente.propuesta.estado} /> : undefined
-      }
-      rutaDatosPropuesta={
-        diagnostico.existe
-          ? (`/admin/clientes/${cliente.id}/diagnostico/datos-propuesta` as Route)
-          : null
-      }
+      estadoPropuesta={cliente.propuesta?.estado ?? null}
     />
   );
 }

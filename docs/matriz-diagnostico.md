@@ -4,26 +4,41 @@ Reemplaza el Excel «Matriz_Diagnostico_Insolvencia_Efectiva_Ley_2445_2025». El
 
 El cliente nunca ve la matriz: solo recibe la propuesta final en su portal.
 
+## Hojas del dashboard (pestañas)
+
+Como el libro de Excel, el diagnóstico de cada cliente tiene varias hojas, todas con el mismo diseño de dashboard y una barra de pestañas común:
+
+| Pestaña                 | Ruta                                               | Hoja del Excel      |
+| ----------------------- | -------------------------------------------------- | ------------------- |
+| Diagnóstico             | `/admin/clientes/<id>/diagnostico`                 | Diagnóstico Cliente |
+| Datos para la propuesta | `/admin/clientes/<id>/diagnostico/datos-propuesta` | DATOS PROPUESTA     |
+| Listas                  | `/admin/clientes/<id>/diagnostico/listas`          | Listas              |
+
+- **Encabezado común** (`src/components/diagnostico/matriz/encabezado-dashboard.tsx`), de lo general a lo particular: el cliente (enlace de regreso a su ficha y botón «Cambiar de cliente»), el título de la hoja con el estado de la propuesta y la fecha del último guardado de la matriz, y una sola fila de pestañas cuya activa va unida a la franja azul oscura de la hoja. Las acciones propias de la hoja (Diagnóstico: «Guía de clases» y «Guardar»; Datos: «Copiar como texto» e «Imprimir o guardar PDF»; Listas: «Guía de clases») van a la derecha del título; en contenedores angostos bajan después de la franja, para que las pestañas queden a la misma altura en las tres hojas.
+- **Barra de pestañas** (`pestanas-hojas.tsx`): enlaces reales (`Link`) dentro de `<nav aria-label="Hojas del diagnóstico">`, con `aria-current="page"` en la activa y un icono por hoja. Como las hojas del libro de Excel, la activa es una pestaña de carpeta en el azul oscuro de la franja, unida a ella (sin la esquina superior izquierda redondeada si es la primera); las inactivas van en texto oscuro y el foco con teclado es un anillo opaco. Mientras se abre una hoja, su icono pasa a indicador de carga (`useLinkStatus`). En pantallas angostas usa etiquetas cortas («Datos propuesta») y, si aun así no caben, se desplaza en horizontal sin mover la página, con la pestaña activa a la vista. No se imprime. Si la matriz tiene cambios sin guardar, la pestaña Diagnóstico lleva un punto ámbar.
+- **Cambios sin guardar:** las pestañas son enlaces, así que la guarda de la matriz pide confirmación antes de salir de Diagnóstico (igual que con cualquier enlace del panel). No pregunta al volver a la pestaña activa ni al abrir un enlace en otra pestaña del navegador (Ctrl/Mayús + clic).
+- **Cambiar de cliente** abre la misma hoja del cliente elegido (diagnóstico, datos o listas).
+- El orden, los títulos y las rutas salen de `src/lib/diagnostico/hojas.ts` (`HOJAS_DIAGNOSTICO`, `rutaHoja()`); `hojas.test.ts` comprueba además que cada hoja tenga su `page.tsx`. Para agregar una hoja: súmala ahí, crea su página con `EncabezadoDashboard` y una franja (`FRANJA` e `Indicador` de `resumen-indicadores.tsx`) y valida el id con `z.uuid()` y `notFound()` como las demás.
+
 ## Panel de la matriz
 
 La matriz es un panel de trabajo del administrador con la identidad visual de la hoja «Diagnóstico Cliente» del Excel (sus azules, las etiquetas azul claro, las franjas de la tabla, los colores por clase y el TOTAL en amarillo, aquí suavizado), sin imitar la cuadrícula ni la tipografía del Excel: todo usa la fuente y los colores del panel. El código está en `src/components/diagnostico/matriz/`. La página fluye con el desplazamiento normal del panel y se adapta al ancho disponible, desde el celular hasta pantallas de 1920 px. Usa _container queries_, así que también responde al tamaño del menú lateral.
 
 De arriba abajo:
 
-1. **Encabezado:** enlace de regreso a la ficha del cliente (el mismo patrón «‹» de las demás páginas de detalle), estado de la propuesta y fecha de la última actualización. Tiene las acciones «Guía de clases», «Datos para la propuesta» (solo si la matriz ya se guardó) y «Guardar».
-2. **Pestaña «Cambiar de cliente»** (ver [abajo](#cambiar-de-cliente)): unida a la franja de resumen, muestra las iniciales y el nombre del cliente.
-3. **Franja de resumen** (azul oscuro del título del Excel):
+1. **Encabezado común** de las hojas (ver [arriba](#hojas-del-dashboard-pestañas)): regreso a la ficha del cliente, botón «Cambiar de cliente» (ver [abajo](#cambiar-de-cliente)), estado de la propuesta, fecha de la última actualización, las acciones «Guía de clases» y «Guardar» y la barra de pestañas.
+2. **Franja de resumen** (azul oscuro del título del Excel):
    - La elegibilidad preliminar en una pastilla: ELEGIBLE en verde (con texto oscuro, por contraste), NO ELEGIBLE en rojo o SIN DATOS.
    - Sus tres condiciones visibles, cada una con su mínimo. El % del pasivo en mora se muestra con un decimal y truncado, para que un 29,96 % no aparezca como «30 %» junto a «No cumple».
    - El tipo de servicio.
    - Los indicadores pasivo total, honorarios (con su %), valor de la cuota (con el número de cuotas) y costo del proceso (con el desglose de gastos y centro).
-4. **Revisión:** solo aparece si el motor marca alertas. Los errores salen en rojo y los avisos en ámbar. «Obligación N» y «La obligación N» se renumeran a la fila que se ve en la tabla.
-5. **Tres tarjetas** con la cabecera azul de las secciones del Excel (una sola columna en pantallas angostas, dos desde 56rem de contenido y tres desde 80rem; en tarjetas de menos de 24rem la etiqueta va encima del campo):
+3. **Revisión:** solo aparece si el motor marca alertas. Los errores salen en rojo y los avisos en ámbar. «Obligación N» y «La obligación N» se renumeran a la fila que se ve en la tabla.
+4. **Tres tarjetas** con la cabecera azul de las secciones del Excel (una sola columna en pantallas angostas, dos desde 56rem de contenido y tres desde 80rem; en tarjetas de menos de 24rem la etiqueta va encima del campo):
    - «Datos del cliente».
    - «Servicio y honorarios», con la tarifa del centro y el valor de la cuota calculados. El centro es obligatorio en los acuerdos de pago.
    - «Notas del caso», con las preguntas guía de los comentarios del Excel como texto de ayuda.
-6. **Obligaciones:** tabla editable en línea con franjas, la columna CLASE coloreada y la fila TOTAL en amarillo. Necesita unos 66,75rem; si el contenido es más angosto solo la tabla se desplaza en horizontal, un sombreado marca el lado con columnas ocultas y, desde 42rem, CLASE y el botón de eliminar quedan fijos a la derecha.
-7. **«Resumen por clase»** (con una barra del peso de cada clase en el pasivo) y **«Acreedores para la propuesta»**, lado a lado y con la misma altura, el TOTAL al pie de ambas. Las tres filas TOTAL de la página tienen el mismo estilo.
+5. **Obligaciones:** tabla editable en línea con franjas, la columna CLASE coloreada y la fila TOTAL en amarillo. Necesita unos 66,75rem; si el contenido es más angosto solo la tabla se desplaza en horizontal, un sombreado marca el lado con columnas ocultas y, desde 42rem, CLASE y el botón de eliminar quedan fijos a la derecha.
+6. **«Resumen por clase»** (con una barra del peso de cada clase en el pasivo) y **«Acreedores para la propuesta»**, lado a lado y con la misma altura, el TOTAL al pie de ambas. Las tres filas TOTAL de la página tienen el mismo estilo.
 
 Comportamiento de la tabla de obligaciones (lógica pura en `src/lib/diagnostico/hoja.ts`):
 
@@ -43,12 +58,12 @@ La «Guía de clases» se abre en un panel lateral, con la prelación de crédit
 
 ### Cambiar de cliente
 
-La pestaña del cliente, sobre la franja de resumen, abre un buscador para pasar a la matriz de otro cliente sin volver al listado (`src/components/diagnostico/matriz/selector-cliente.tsx`):
+El botón «Cambiar de cliente», junto al enlace de regreso a la ficha en el encabezado de cada hoja, abre un buscador para pasar a otro cliente sin volver al listado, en la misma hoja que se estaba viendo (`src/components/diagnostico/matriz/selector-cliente.tsx`):
 
 - Sin texto muestra los 8 clientes con actividad más reciente; con texto busca en el servidor, tras una espera de 250 ms, por nombre, documento, correo o teléfono. Hay indicador de carga, estado «Sin resultados» y, si falla la red, un aviso con «Reintentar». Cada vez que se abre vuelve a consultar (los datos pueden haber cambiado con un guardado); mientras tanto muestra la lista anterior.
 - Cada resultado muestra el nombre, un dato secundario (el documento; si lo buscado no está en el nombre ni en el documento sino en el correo o el teléfono, ese dato), el estado de la propuesta y si ya tiene matriz. El cliente actual aparece marcado y elegirlo solo cierra el panel. Al pie, «Ver todos los clientes» lleva a `/admin/clientes`.
-- Teclado (patrón _combobox_ accesible): el foco va al buscador al abrir; las flechas recorren la lista, Enter abre el cliente y Esc cierra y devuelve el foco a la pestaña. Al abrir otro cliente, el foco pasa a la pestaña nueva, cuyo nombre accesible incluye el del cliente (el título del documento no lo lleva).
-- Si la matriz tiene cambios sin guardar, pide confirmación antes de cambiar de cliente. Al cambiar, la matriz se monta de nuevo con los datos del otro cliente (`key` por cliente en la página).
+- Teclado (patrón _combobox_ accesible): el foco va al buscador al abrir; las flechas recorren la lista, Enter abre el cliente y Esc cierra y devuelve el foco al botón. Al abrir otro cliente, el foco pasa al botón de la página nueva, cuyo nombre accesible incluye el del cliente («Cambiar de cliente (cliente actual: …)»; el título del documento no lo lleva).
+- Si la matriz tiene cambios sin guardar, pide confirmación antes de cambiar de cliente. Al cambiar, se abre la misma hoja del otro cliente (`rutaHoja()`) y la matriz se monta de nuevo con sus datos (`key` por cliente en la página).
 - Servidor: la Server Action `buscarClientesMatriz()` (en `acciones.ts` de la página) valida la sesión de admin y el texto (`busquedaClientesSchema`, máx. 100 caracteres) y llama a `buscarClientesParaMatriz()` de `src/lib/datos/diagnostico.ts`, que devuelve solo `{ id, nombre, detalle, estadoPropuesta, tieneMatriz }`. La «actividad reciente» es la fecha más reciente entre la ficha, la matriz y la propuesta: como PostgREST no ordena por la mayor de varias columnas, se piden los 8 primeros según cada fecha y `masRecientes()` los combina. El filtro sale de `filtroBusqueda()` (`src/lib/busqueda.ts`), la misma utilidad del listado de clientes y del CRM: quita los caracteres reservados de PostgREST y busca `_` como carácter literal, no como comodín de `ilike`. Si lo escrito solo tiene caracteres que se quitan (p. ej. «,,,»), devuelve «Sin resultados» sin consultar. La lógica pura está probada en `src/lib/diagnostico/selector-cliente.test.ts`.
 
 ## Qué se registra
@@ -114,7 +129,24 @@ Están en `src/lib/diagnostico/parametros.ts`: umbral y mínimos de elegibilidad
 
 ## Datos para la propuesta
 
-`/admin/clientes/<id>/diagnostico/datos-propuesta` equivale a la hoja «DATOS PROPUESTA», con las mismas tarjetas y tablas de la matriz: los datos del cliente, la tabla de acreencias con las etiquetas que espera el prompt (clase en mayúsculas, «> 90 días», «Sin garantía», «SI»/«NO»), las notas y los honorarios. Se puede imprimir o guardar como PDF y copiar como texto para el prompt de la propuesta. Si hay alertas de nivel error, tanto la impresión como el texto empiezan con «REQUIERE REVISIÓN ANTES DE GENERAR PROPUESTA» y la lista de errores, como exige el prompt. En la fase de propuestas con IA esta misma estructura (`construirDatosPropuesta()`) alimentará el generador.
+`/admin/clientes/<id>/diagnostico/datos-propuesta` equivale a la hoja «DATOS PROPUESTA» con el diseño del dashboard (`src/components/diagnostico/datos-propuesta.tsx`):
+
+- La misma franja de resumen de la matriz (`ResumenIndicadores`: elegibilidad, tipo de servicio, pasivo total, honorarios, cuota y costo del proceso), calculada con la matriz guardada.
+- Tarjetas con la cabecera azul del Excel: «Datos del cliente» y «Honorarios y datos del contrato» lado a lado; «Deudas del cliente» a todo el ancho, con la clase en su color y el TOTAL en amarillo (si no cabe, solo la tabla se desplaza, con el mismo sombreado de «Obligaciones» y foco de teclado para desplazarla); y «Observaciones jurídicas», «Situación / urgencia del cliente» y «Objetivo del cliente».
+- Las etiquetas son las que espera el prompt (clase en mayúsculas, «> 90 días», «Sin garantía», «SI»/«NO»). El tipo de servicio y «Requiere centro de conciliación» se ven en pantalla como en la franja y en Diagnóstico («Acuerdo de pago», «Sí») y salen con el texto exacto del prompt («Acuerdo de Pago», «SI») al imprimir y en la copia como texto. Si hay alertas de nivel error, la hoja, la impresión y el texto empiezan con «REQUIERE REVISIÓN ANTES DE GENERAR PROPUESTA» y la lista de errores, como exige el prompt; los avisos solo se ven en pantalla.
+- **Imprimir o guardar PDF:** se ocultan el encabezado, las pestañas y la franja; la hoja lleva su propio encabezado (Insolvencia Efectiva, cliente y fecha) y las seis secciones van en una columna, numeradas y en el orden del Excel y de la copia como texto (1. Datos del cliente … 6. Honorarios). Los colores del Excel se imprimen aunque el navegador tenga desactivados los gráficos de fondo (`print-color-adjust: exact`), las tarjetas pequeñas no se parten entre páginas y la tabla de deudas se parte entre filas.
+- **Copiar como texto** usa `datosPropuestaComoTexto()`, el mismo formato que recibe el prompt de la propuesta.
+- **Sin matriz guardada:** la pestaña sigue visible y, en lugar de la franja, un estado vacío explica que la hoja se arma con la matriz y lleva a la pestaña Diagnóstico.
+
+En la fase de propuestas con IA esta misma estructura (`construirDatosPropuesta()`) alimentará el generador.
+
+## Listas
+
+`/admin/clientes/<id>/diagnostico/listas` equivale a la hoja «Listas» del Excel: los catálogos de las listas desplegables y los parámetros del motor, de solo lectura (`src/components/diagnostico/listas-diagnostico.tsx`, componente de servidor). Todo sale de `catalogos.ts` y `parametros.ts`, los mismos valores que usa el motor, así que nunca se desalinea con los cálculos.
+
+- **Franja:** aviso de solo lectura («Estos valores se configuran en el sistema; para cambiarlos contacta al equipo técnico.») y los parámetros clave: % de honorarios por defecto, cuotas, gastos del proceso y rangos de tarifas del centro.
+- **Tarjetas**, en tres filas de una columna ancha y otra angosta (una sola columna en pantallas angostas). Las columnas se alinean arriba y ninguna tarjeta se estira: el espacio sobrante queda fuera de las tarjetas, no como un hueco en blanco dentro de ellas. Contenido: «Clases de crédito» (con su color, qué incluye y base legal; la guía completa está en «Guía de clases»), «Mora» (con el texto de la lista de la matriz y cuál cuenta para la elegibilidad), «Tipo de garantía» (con la clase esperada), «Tipos de servicio» (descripción y si el centro de conciliación es obligatorio), «Estado civil», «% de honorarios» (sugeridos y por defecto), «Cuotas de honorarios» (de 1 al máximo, `opcionesCuotas()`, en una cuadrícula de 6, 10, 15 o 20 columnas según el ancho de la tarjeta, para que las 60 cuotas llenen filas completas), «Tarifas del centro de conciliación» (desde, hasta y tarifa; si no cabe, la tabla se desplaza y recibe el foco del teclado), «Gastos del proceso» y «Reglas de elegibilidad».
+- Los datos del cliente para el encabezado salen de `obtenerEncabezadoDiagnostico()` (`src/lib/datos/diagnostico.ts`): solo id, nombre, estado de la propuesta y fecha de la matriz.
 
 ## Modelo de datos
 
