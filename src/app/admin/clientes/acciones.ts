@@ -1,57 +1,22 @@
 "use server";
 
-import type { Route } from "next";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { erroresDeValidacion, valoresTexto, type EstadoAccion } from "@/lib/acciones";
 import { requerirAdmin } from "@/lib/auth/sesion";
 import { createClient } from "@/lib/supabase/server";
-import { clienteSchema, valoresFormularioCliente } from "@/lib/validaciones/cliente";
+import {
+  clienteDuplicado,
+  clienteSchema,
+  valoresFormularioCliente,
+} from "@/lib/validaciones/cliente";
 import {
   BUCKET_PROPUESTAS,
   esRutaDocumentoValida,
   rutaDocumentoPropuesta,
 } from "@/lib/propuestas/documentos";
 import { actualizarEstadoSchema, notaInternaSchema } from "@/lib/validaciones/propuesta";
-
-function mensajeDuplicado(error: { code?: string; message: string }): string | null {
-  if (error.code !== "23505") return null;
-  if (error.message.includes("clientes_email_key")) return "Ya existe un cliente con ese correo.";
-  if (error.message.includes("clientes_documento_key")) {
-    return "Ya existe un cliente con ese documento.";
-  }
-  return "Ya existe un cliente con esos datos.";
-}
-
-export async function crearCliente(
-  _estado: EstadoAccion,
-  formData: FormData,
-): Promise<EstadoAccion> {
-  const admin = await requerirAdmin();
-
-  const valores = valoresFormularioCliente(formData);
-  const datos = clienteSchema.safeParse(valores);
-  if (!datos.success) return erroresDeValidacion(datos.error, valores);
-
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("clientes")
-    .insert({ ...datos.data, origen: "creado_por_admin", created_by: admin.id })
-    .select("id")
-    .single();
-
-  if (error) {
-    const duplicado = mensajeDuplicado(error);
-    if (duplicado) return { ok: false, mensaje: duplicado, valores };
-    console.error("Error al crear cliente:", error.message);
-    return { ok: false, mensaje: "No pudimos crear el cliente. Inténtalo de nuevo.", valores };
-  }
-
-  revalidatePath("/admin", "layout");
-  redirect(`/admin/clientes/${data.id}` as Route);
-}
 
 export async function actualizarCliente(
   clienteId: string,
@@ -69,8 +34,8 @@ export async function actualizarCliente(
   const { error } = await supabase.from("clientes").update(datos.data).eq("id", clienteId);
 
   if (error) {
-    const duplicado = mensajeDuplicado(error);
-    if (duplicado) return { ok: false, mensaje: duplicado, valores };
+    const duplicado = clienteDuplicado(error);
+    if (duplicado) return { ok: false, mensaje: duplicado.mensaje, valores };
     console.error("Error al actualizar cliente:", error.message);
     return { ok: false, mensaje: "No pudimos guardar los cambios. Inténtalo de nuevo.", valores };
   }

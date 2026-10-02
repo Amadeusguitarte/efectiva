@@ -14,11 +14,15 @@ export const metadata: Metadata = {
 
 export default async function DiagnosticoPage({
   params,
+  searchParams,
 }: PageProps<"/admin/clientes/[id]/diagnostico">) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const diagnostico = await obtenerDiagnosticoCliente(id);
+  const [diagnostico, { creado }] = await Promise.all([
+    obtenerDiagnosticoCliente(id),
+    searchParams,
+  ]);
   if (!diagnostico) notFound();
 
   const { cliente } = diagnostico;
@@ -36,8 +40,10 @@ export default async function DiagnosticoPage({
           ? formatearFechaHora(diagnostico.actualizadoAt)
           : null
       }
-      clienteId={cliente.id}
-      nombreCliente={cliente.nombre}
+      cliente={{ id: cliente.id, nombre: cliente.nombre }}
+      valoresCliente={diagnostico.valoresCliente}
+      // Viene de crear el cliente desde la matriz («Nuevo cliente»).
+      avisoCreado={creado === "1"}
       buscarClientes={buscarClientesMatriz}
       estadoPropuesta={cliente.propuesta?.estado ?? null}
     />

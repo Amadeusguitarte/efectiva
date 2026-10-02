@@ -17,6 +17,7 @@ import {
   type ClienteSelector,
 } from "@/lib/diagnostico/selector-cliente";
 import { createClient } from "@/lib/supabase/server";
+import type { ValoresCliente } from "@/lib/validaciones/cliente";
 
 /**
  * Matriz de diagnóstico de un cliente para el panel: la entrada guardada (o vacía si aún no
@@ -29,7 +30,7 @@ export async function obtenerDiagnosticoCliente(clienteId: string) {
   const { data: cliente, error } = await supabase
     .from("clientes")
     .select(
-      `id, nombre_completo, email,
+      `id, nombre_completo, email, telefono, tipo_documento, numero_documento, ciudad,
        propuestas(id, estado),
        diagnosticos(
          id, ocupacion, ingresos_mensuales, gastos_mensuales, bienes, estado_civil, tipo_servicio,
@@ -88,6 +89,15 @@ export async function obtenerDiagnosticoCliente(clienteId: string) {
       email: cliente.email,
       propuesta: cliente.propuestas,
     },
+    /** Datos del cliente como texto, para la tarjeta «Datos del cliente» de la matriz. */
+    valoresCliente: {
+      nombre_completo: cliente.nombre_completo,
+      email: cliente.email,
+      telefono: cliente.telefono ?? "",
+      tipo_documento: cliente.tipo_documento ?? "",
+      numero_documento: cliente.numero_documento ?? "",
+      ciudad: cliente.ciudad ?? "",
+    } satisfies ValoresCliente,
     existe: fila !== null,
     actualizadoAt: fila?.updated_at ?? null,
     actualizadoPor: fila?.autor ?? null,

@@ -15,7 +15,8 @@ import { SelectorCliente } from "./selector-cliente";
 type EncabezadoDashboardProps = {
   /** Hoja abierta: da el título, marca su pestaña y es la que se abre al cambiar de cliente. */
   hoja: HojaDiagnostico;
-  cliente: { id: string; nombre: string };
+  /** Cliente de la hoja; null en la matriz de un cliente nuevo (se crea al guardar). */
+  cliente: { id: string; nombre: string } | null;
   estadoPropuesta: EstadoPropuesta | null;
   /** Fecha del último guardado de la matriz, ya formateada en el servidor; null si no existe. */
   fechaActualizacion: string | null;
@@ -66,15 +67,15 @@ export function EncabezadoDashboard({
       <header className="grid min-w-0 justify-items-start gap-1 @4xl:col-start-1 @4xl:row-start-1">
         <div className="mb-3 flex max-w-full min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
           <Link
-            href={`/admin/clientes/${cliente.id}` as Route}
+            href={cliente ? (`/admin/clientes/${cliente.id}` as Route) : "/admin/clientes"}
             className="inline-flex max-w-full min-w-0 items-center gap-1 text-sm text-foreground/80 hover:text-foreground"
           >
             <ChevronLeft className="size-4 shrink-0" aria-hidden />
-            <span className="truncate">{cliente.nombre}</span>
+            <span className="truncate">{cliente ? cliente.nombre : "Clientes"}</span>
           </Link>
           <SelectorCliente
-            clienteId={cliente.id}
-            nombreCliente={cliente.nombre}
+            clienteId={cliente?.id ?? ""}
+            nombreCliente={cliente?.nombre ?? "Nuevo cliente"}
             hoja={hoja}
             hayCambios={hayCambios}
             buscarClientes={buscarClientes}
@@ -93,9 +94,11 @@ export function EncabezadoDashboard({
             </>
           ) : null}
           <span>
-            {fechaActualizacion
-              ? `Matriz actualizada el ${fechaActualizacion}`
-              : "La matriz aún no se ha guardado"}
+            {!cliente
+              ? "Cliente nuevo: escribe sus datos y su diagnóstico; al guardar se crea el expediente."
+              : fechaActualizacion
+                ? `Matriz actualizada el ${fechaActualizacion}`
+                : "La matriz aún no se ha guardado"}
           </span>
         </p>
       </header>
@@ -108,7 +111,7 @@ export function EncabezadoDashboard({
         )}
       >
         {aviso ? <div className="mb-6">{aviso}</div> : null}
-        <PestanasHojas clienteId={cliente.id} hoja={hoja} hayCambios={hayCambios} />
+        <PestanasHojas clienteId={cliente?.id ?? null} hoja={hoja} hayCambios={hayCambios} />
         {franja}
       </div>
 

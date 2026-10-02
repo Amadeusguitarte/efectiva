@@ -8,6 +8,7 @@ import {
   Save,
   TriangleAlert,
 } from "lucide-react";
+import type { Route } from "next";
 import {
   startTransition,
   useActionState,
@@ -18,6 +19,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { InputPesos } from "@/components/formularios/input-pesos";
@@ -50,6 +52,12 @@ import { opcionesCuotas, PARAMETROS_DIAGNOSTICO } from "@/lib/diagnostico/parame
 import type { ResultadoBusquedaClientes } from "@/lib/diagnostico/selector-cliente";
 import { formatearPesos, plural } from "@/lib/formato";
 import type { EstadoPropuesta } from "@/lib/propuestas/estados";
+import {
+  CAMPOS_CLIENTE,
+  TIPOS_DOCUMENTO,
+  type CampoCliente,
+  type ValoresCliente,
+} from "@/lib/validaciones/cliente";
 
 import { AlertasDiagnostico } from "../alertas-diagnostico";
 import { FilaCalculada, FilaCampo, SelectNativo, TarjetaMatriz } from "./controles";
@@ -66,8 +74,12 @@ type MatrizDiagnosticoProps = {
   actualizadoAt: string | null;
   /** Fecha de la última actualización ya formateada en el servidor. */
   fechaActualizacion: string | null;
-  clienteId: string;
-  nombreCliente: string;
+  /** Cliente de la matriz; null al crear un cliente nuevo desde la matriz. */
+  cliente: { id: string; nombre: string } | null;
+  /** Datos del cliente (nombre, correo, documento…) que se editan en «Datos del cliente». */
+  valoresCliente: ValoresCliente;
+  /** Recién creado desde la matriz: muestra el aviso una vez. */
+  avisoCreado?: boolean;
   /** Búsqueda de la pestaña «Cambiar de cliente» (Server Action). */
   buscarClientes: (termino: string) => Promise<ResultadoBusquedaClientes>;
   /** Estado de la propuesta del cliente, si tiene. */
@@ -110,8 +122,9 @@ export function MatrizDiagnostico({
   inicial,
   actualizadoAt,
   fechaActualizacion,
-  clienteId,
-  nombreCliente,
+  cliente,
+  valoresCliente,
+  avisoCreado = false,
   buscarClientes,
   estadoPropuesta,
 }: MatrizDiagnosticoProps) {
@@ -120,6 +133,7 @@ export function MatrizDiagnostico({
   const id = useId();
   const idCampo = (nombre: string) => `${id}-${nombre}`;
 
+  const [identidad, setIdentidad] = useState<ValoresCliente>(valoresCliente);
   const [datos, setDatos] = useState<Datos>(() => {
     const { obligaciones: _obligaciones, ...resto } = inicial;
     return resto;
@@ -144,6 +158,12 @@ export function MatrizDiagnostico({
   );
   const resultado = useMemo(() => calcularDiagnostico(entrada), [entrada]);
   const serializado = useMemo(() => JSON.stringify(entrada), [entrada]);
+  const serializadoCliente = useMemo(
+    () => JSON.stringify(Object.fromEntries(CAMPOS_CLIENTE.map((c) => [c, identidad[c]]))),
+    [identidad],
+  );
+  // Lo que se compara para saber si hay cambios: la matriz y los datos del cliente.
+  const huella = `${serializado}\n${serializadoCliente}`;
 
   const calculadas = useMemo(() => {
     const mapa = new Map<number, ObligacionCalculada>();
@@ -176,19 +196,19 @@ export function MatrizDiagnostico({
 
   // Al responder el servidor se recuerda qué filas se enviaron (para ubicar cada error en su
   // fila aunque después se agreguen o eliminen) y si el guardado fue correcto.
-  const [ultimoGuardado, setUltimoGuardado] = useState(serializado);
+  const [ultimoGuardado, setUltimoGuardado] = useState(huella);
   const [ultimoEstado, setUltimoEstado] = useState(estado);
   const [clavesEnviadas, setClavesEnviadas] = useState<number[]>([]);
   const [enviado, setEnviado] = useState(() => ({
-    serializado,
+    huella,
     claves: incluidas.map((f) => f.clave),
   }));
   if (estado !== ultimoEstado) {
     setUltimoEstado(estado);
     setClavesEnviadas(enviado.claves);
-    if (estado.ok) setUltimoGuardado(enviado.serializado);
+    if (estado.ok) setUltimoGuardado(enviado.huella);
   }
-  const hayCambios = serializado !== ultimoGuardado;
+  const hayCambios = huella !== ultimoGuardado;
   const barraVisible = hayCambios || pendiente;
 
   function errorObligacion(clave: number, campo: keyof ObligacionEntrada) {
@@ -258,6 +278,17 @@ export function MatrizDiagnostico({
     return () => window.removeEventListener("keydown", alPresionar);
   }, []);
 
+  // Cliente recién creado desde la matriz: aviso una sola vez y se quita `?creado=1` de la URL.
+  const router = useRouter();
+  const ruta = usePathname();
+  const avisoMostrado = useRef(false);
+  useEffect(() => {
+    if (!avisoCreado || avisoMostrado.current) return;
+    avisoMostrado.current = true;
+    toast.success("Cliente creado y matriz guardada.");
+    router.replace(ruta as Route, { scroll: false });
+  }, [avisoCreado, router, ruta]);
+
   // Tras responder el servidor: aviso de éxito, o foco en el primer campo con error (o en el
   // mensaje general si el error no es de un campo).
   useEffect(() => {
@@ -274,6 +305,13 @@ export function MatrizDiagnostico({
       refMensaje.current?.scrollIntoView({ block: "center", behavior: "smooth" });
     }
   }, [estado]);
+
+  function actualizarCliente(campo: CampoCliente, valor: string) {
+    setIdentidad((actual) => ({ ...actual, [campo]: valor }));
+  }
+
+  /** Error de un dato del cliente (llegan con el prefijo `cliente.`). */
+  const errorCliente = (campo: CampoCliente) => errores[`cliente.${campo}`]?.[0];
 
   function actualizar<K extends keyof Datos>(campo: K, valor: Datos[K]) {
     setDatos((actual) => ({ ...actual, [campo]: valor }));
@@ -348,18 +386,19 @@ export function MatrizDiagnostico({
         evento.preventDefault();
         if (pendiente) return;
         const formData = new FormData(evento.currentTarget);
-        setEnviado({ serializado, claves: incluidas.map((f) => f.clave) });
+        setEnviado({ huella, claves: incluidas.map((f) => f.clave) });
         startTransition(() => accionFormulario(formData));
       }}
       onKeyDown={evitarEnvioConEnter}
       className="@container grid min-w-0 gap-6"
     >
       <input type="hidden" name="datos" value={serializado} />
+      <input type="hidden" name="cliente" value={serializadoCliente} />
       <input type="hidden" name="actualizado_en" value={actualizadoAt ?? ""} />
 
       <EncabezadoDashboard
         hoja="diagnostico"
-        cliente={{ id: clienteId, nombre: nombreCliente }}
+        cliente={cliente}
         estadoPropuesta={estadoPropuesta}
         fechaActualizacion={fechaActualizacion}
         buscarClientes={buscarClientes}
@@ -417,13 +456,122 @@ export function MatrizDiagnostico({
           unos 26rem y las etiquetas caben en una o dos líneas. */}
       <div className="grid gap-6 @4xl:grid-cols-2 @7xl:grid-cols-3">
         <TarjetaMatriz id={idCampo("titulo-datos")} titulo="Datos del cliente">
-          <FilaCampo etiqueta="Nombre" vineta>
-            <p
-              className="flex min-h-9 items-center px-1 text-sm font-semibold"
-              title="Se edita en la ficha del cliente"
-            >
-              {nombreCliente}
-            </p>
+          <FilaCampo
+            etiqueta="Nombre completo"
+            htmlFor={idCampo("nombre")}
+            vineta
+            error={errorCliente("nombre_completo")}
+          >
+            {(control) => (
+              <Input
+                {...control}
+                id={idCampo("nombre")}
+                value={identidad.nombre_completo}
+                onChange={(e) => actualizarCliente("nombre_completo", e.target.value)}
+                maxLength={160}
+                autoComplete="off"
+                aria-required
+                aria-invalid={Boolean(errorCliente("nombre_completo")) || undefined}
+                className="font-semibold"
+              />
+            )}
+          </FilaCampo>
+          <FilaCampo
+            etiqueta="Documento"
+            htmlFor={idCampo("documento")}
+            vineta
+            error={errorCliente("tipo_documento") ?? errorCliente("numero_documento")}
+          >
+            {(control) => (
+              <div className="flex min-w-0 gap-2">
+                <SelectNativo
+                  aria-label="Tipo de documento"
+                  aria-describedby={control["aria-describedby"]}
+                  value={identidad.tipo_documento}
+                  onChange={(e) => actualizarCliente("tipo_documento", e.target.value)}
+                  aria-invalid={Boolean(errorCliente("tipo_documento")) || undefined}
+                  className="w-24"
+                >
+                  <option value="">Tipo</option>
+                  {Object.keys(TIPOS_DOCUMENTO).map((tipo) => (
+                    <option key={tipo} value={tipo}>
+                      {tipo}
+                    </option>
+                  ))}
+                </SelectNativo>
+                <Input
+                  {...control}
+                  id={idCampo("documento")}
+                  aria-label="Número de documento"
+                  value={identidad.numero_documento}
+                  onChange={(e) => actualizarCliente("numero_documento", e.target.value)}
+                  maxLength={20}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  aria-invalid={Boolean(errorCliente("numero_documento")) || undefined}
+                  className="tabular-nums"
+                />
+              </div>
+            )}
+          </FilaCampo>
+          <FilaCampo
+            etiqueta="Correo"
+            htmlFor={idCampo("correo")}
+            vineta
+            error={errorCliente("email")}
+            ayuda={cliente ? undefined : "Con este correo el cliente entra a su portal."}
+          >
+            {(control) => (
+              <Input
+                {...control}
+                id={idCampo("correo")}
+                type="email"
+                value={identidad.email}
+                onChange={(e) => actualizarCliente("email", e.target.value)}
+                maxLength={254}
+                autoComplete="off"
+                aria-required
+                aria-invalid={Boolean(errorCliente("email")) || undefined}
+              />
+            )}
+          </FilaCampo>
+          <FilaCampo
+            etiqueta="Teléfono"
+            htmlFor={idCampo("telefono")}
+            vineta
+            error={errorCliente("telefono")}
+          >
+            {(control) => (
+              <Input
+                {...control}
+                id={idCampo("telefono")}
+                type="tel"
+                value={identidad.telefono}
+                onChange={(e) => actualizarCliente("telefono", e.target.value)}
+                maxLength={20}
+                autoComplete="off"
+                placeholder="+57 300 000 0000"
+                aria-invalid={Boolean(errorCliente("telefono")) || undefined}
+              />
+            )}
+          </FilaCampo>
+          <FilaCampo
+            etiqueta="Ciudad"
+            htmlFor={idCampo("ciudad")}
+            vineta
+            error={errorCliente("ciudad")}
+          >
+            {(control) => (
+              <Input
+                {...control}
+                id={idCampo("ciudad")}
+                value={identidad.ciudad}
+                onChange={(e) => actualizarCliente("ciudad", e.target.value)}
+                maxLength={80}
+                autoComplete="off"
+                aria-invalid={Boolean(errorCliente("ciudad")) || undefined}
+              />
+            )}
           </FilaCampo>
           <FilaCampo
             etiqueta="Ocupación"

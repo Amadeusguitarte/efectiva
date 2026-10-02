@@ -48,7 +48,8 @@ export function PestanasHojas({
   hoja,
   hayCambios = false,
 }: {
-  clienteId: string;
+  /** null en la matriz de un cliente nuevo: las demás hojas se abren cuando ya está guardada. */
+  clienteId: string | null;
   hoja: HojaDiagnostico;
   /** La matriz tiene cambios sin guardar: su pestaña lleva un punto ámbar. */
   hayCambios?: boolean;
@@ -76,10 +77,25 @@ export function PestanasHojas({
         {HOJAS_DIAGNOSTICO.map(({ valor, etiqueta, etiquetaCorta }, indice) => {
           const activa = valor === hoja;
           const sinGuardar = hayCambios && valor === "diagnostico";
+          if (!clienteId && !activa) {
+            return (
+              <li key={valor} className="shrink-0">
+                <span
+                  aria-disabled="true"
+                  title="Guarda la matriz para abrir esta hoja"
+                  className="flex h-11 cursor-not-allowed items-center gap-2 px-3 text-sm font-medium whitespace-nowrap text-muted-foreground sm:px-4"
+                >
+                  <span className="sm:hidden">{etiquetaCorta}</span>
+                  <span className="max-sm:hidden">{etiqueta}</span>
+                  <span className="sr-only">(disponible al guardar la matriz)</span>
+                </span>
+              </li>
+            );
+          }
           return (
             <li key={valor} className="shrink-0">
               <Link
-                href={rutaHoja(clienteId, valor)}
+                href={clienteId ? rutaHoja(clienteId, valor) : "/admin/clientes/nuevo"}
                 aria-current={activa ? "page" : undefined}
                 className={cn(
                   "group relative flex h-11 items-center gap-2 rounded-t-xl px-3 text-sm whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset sm:px-4",

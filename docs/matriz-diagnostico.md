@@ -34,7 +34,7 @@ De arriba abajo:
    - Los indicadores pasivo total, honorarios (con su %), valor de la cuota (con el número de cuotas) y costo del proceso (con el desglose de gastos y centro).
 3. **Revisión:** solo aparece si el motor marca alertas. Los errores salen en rojo y los avisos en ámbar. «Obligación N» y «La obligación N» se renumeran a la fila que se ve en la tabla.
 4. **Tres tarjetas** con la cabecera azul de las secciones del Excel (una sola columna en pantallas angostas, dos desde 56rem de contenido y tres desde 80rem; en tarjetas de menos de 24rem la etiqueta va encima del campo):
-   - «Datos del cliente».
+   - «Datos del cliente»: nombre completo, documento (tipo y número), correo, teléfono y ciudad del expediente, más ocupación, ingresos, gastos, bienes y estado civil. Los datos del expediente se guardan junto con la matriz (también se pueden editar en la ficha del cliente).
    - «Servicio y honorarios», con la tarifa del centro y el valor de la cuota calculados. El centro es obligatorio en los acuerdos de pago.
    - «Notas del caso», con las preguntas guía de los comentarios del Excel como texto de ayuda.
 5. **Obligaciones:** tabla editable en línea con franjas, la columna CLASE coloreada y la fila TOTAL en amarillo. Necesita unos 66,75rem; si el contenido es más angosto solo la tabla se desplaza en horizontal, un sombreado marca el lado con columnas ocultas y, desde 42rem, CLASE y el botón de eliminar quedan fijos a la derecha.
@@ -56,6 +56,17 @@ Guardado:
 
 La «Guía de clases» se abre en un panel lateral, con la prelación de créditos de la hoja «Guía 5 Clases» y sus fuentes. Los colores son tokens `hoja-*` y `clase-*` (más `clase-*-intenso` para las barras) de `globals.css`.
 
+### Crear un cliente
+
+No hay formulario aparte: «Nuevo cliente» (en Resumen y en Clientes) abre `/admin/clientes/nuevo`, que es esta misma matriz vacía. Se escriben los datos del cliente en «Datos del cliente» (nombre y correo son obligatorios; el correo es con el que el cliente entra a su portal) junto con su diagnóstico, y al guardar:
+
+- La Server Action `crearClienteConMatriz()` (en `src/app/admin/clientes/[id]/diagnostico/acciones.ts`) valida la sesión de admin, la matriz y los datos del cliente (`leerFormularioMatriz()` de `src/lib/diagnostico/guardado.ts`, que marca los errores del cliente con el prefijo `cliente.`).
+- Crea el expediente (la base le abre su propuesta) y guarda la matriz con `guardar_diagnostico`. Si la matriz no se puede guardar, borra el expediente recién creado para no dejar clientes a medias.
+- Un correo o documento repetido se marca en su campo y no crea nada.
+- Al terminar abre la matriz del cliente nuevo (`?creado=1` muestra el aviso «Cliente creado y matriz guardada.» y se quita de la dirección).
+
+Mientras el cliente no existe, las pestañas «Datos para la propuesta» y «Listas» aparecen desactivadas.
+
 ### Cambiar de cliente
 
 El botón «Cambiar de cliente», junto al enlace de regreso a la ficha en el encabezado de cada hoja, abre un buscador para pasar a otro cliente sin volver al listado, en la misma hoja que se estaba viendo (`src/components/diagnostico/matriz/selector-cliente.tsx`):
@@ -68,12 +79,12 @@ El botón «Cambiar de cliente», junto al enlace de regreso a la ficha en el en
 
 ## Qué se registra
 
-| Sección                 | Campos                                                                                                           | Hoja del Excel                             |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| Situación económica     | Ocupación, estado civil, ingresos y gastos mensuales, bienes a nombre del deudor                                 | Diagnóstico Cliente, «Datos del cliente»   |
-| Obligaciones            | Acreedor, concepto, capital, intereses y otros, mora, días de mora, descuento de nómina, tipo de garantía, clase | Diagnóstico Cliente, tabla de obligaciones |
-| Servicio y honorarios   | Tipo de servicio, % de honorarios, cuotas, requiere centro de conciliación, descuento del centro                 | Diagnóstico Cliente, «Indicadores»         |
-| Notas para la propuesta | Observaciones jurídicas, situación y urgencia, objetivo del cliente                                              | Diagnóstico Cliente, columnas K a M        |
+| Sección                 | Campos                                                                                                                  | Hoja del Excel                             |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Datos del cliente       | Nombre, documento, correo, teléfono y ciudad (expediente); ocupación, estado civil, ingresos y gastos mensuales, bienes | Diagnóstico Cliente, «Datos del cliente»   |
+| Obligaciones            | Acreedor, concepto, capital, intereses y otros, mora, días de mora, descuento de nómina, tipo de garantía, clase        | Diagnóstico Cliente, tabla de obligaciones |
+| Servicio y honorarios   | Tipo de servicio, % de honorarios, cuotas, requiere centro de conciliación, descuento del centro                        | Diagnóstico Cliente, «Indicadores»         |
+| Notas para la propuesta | Observaciones jurídicas, situación y urgencia, objetivo del cliente                                                     | Diagnóstico Cliente, columnas K a M        |
 
 Los catálogos (clases, moras, garantías, tipos de servicio, estados civiles) están en `src/lib/diagnostico/catalogos.ts`, con la guía de prelación de créditos de la hoja oculta «Guía 5 Clases».
 

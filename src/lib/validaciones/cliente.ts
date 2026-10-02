@@ -71,11 +71,43 @@ export const CAMPOS_CLIENTE = [
 
 export type CampoCliente = (typeof CAMPOS_CLIENTE)[number];
 
+/** Datos del cliente tal como se escriben en un formulario (texto; vacío si falta). */
+export type ValoresCliente = Record<CampoCliente, string>;
+
+export function valoresClienteVacios(): ValoresCliente {
+  return Object.fromEntries(CAMPOS_CLIENTE.map((campo) => [campo, ""])) as ValoresCliente;
+}
+
+/** Lee los datos del cliente de un objeto cualquiera (p. ej. JSON del formulario de la matriz). */
+export function valoresClienteDe(objeto: unknown): ValoresCliente {
+  const fuente = typeof objeto === "object" && objeto !== null ? objeto : {};
+  return Object.fromEntries(
+    CAMPOS_CLIENTE.map((campo) => {
+      const valor = (fuente as Record<string, unknown>)[campo];
+      return [campo, typeof valor === "string" ? valor : ""];
+    }),
+  ) as ValoresCliente;
+}
+
+/**
+ * Mensaje y campo para una violación de unicidad al guardar un cliente (código 23505 de
+ * PostgreSQL); null si el error es de otro tipo.
+ */
+export function clienteDuplicado(error: {
+  code?: string;
+  message: string;
+}): { mensaje: string; campo: CampoCliente | null } | null {
+  if (error.code !== "23505") return null;
+  if (error.message.includes("clientes_email_key")) {
+    return { mensaje: "Ya existe un cliente con ese correo.", campo: "email" };
+  }
+  if (error.message.includes("clientes_documento_key")) {
+    return { mensaje: "Ya existe un cliente con ese documento.", campo: "numero_documento" };
+  }
+  return { mensaje: "Ya existe un cliente con esos datos.", campo: null };
+}
+
 /** Valores de texto del formulario de cliente; los campos ausentes llegan como cadena vacía. */
-export function valoresFormularioCliente(formData: FormData): Record<CampoCliente, string> {
-  const valores = valoresTexto(formData, CAMPOS_CLIENTE);
-  return Object.fromEntries(CAMPOS_CLIENTE.map((campo) => [campo, valores[campo] ?? ""])) as Record<
-    CampoCliente,
-    string
-  >;
+export function valoresFormularioCliente(formData: FormData): ValoresCliente {
+  return valoresClienteDe(valoresTexto(formData, CAMPOS_CLIENTE));
 }

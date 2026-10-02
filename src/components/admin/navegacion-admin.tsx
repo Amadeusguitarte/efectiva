@@ -19,17 +19,15 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useState, type ReactNode } from "react";
 
 import isotipo from "@/assets/images/isotipo.png";
 import { Logo } from "@/components/marca/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { siteConfig } from "@/config/site";
-import { esTamanoMenu, type TamanoMenu } from "@/lib/preferencias-menu";
 import { cn } from "cn";
 
 type ItemNavegacion = {
@@ -73,12 +71,6 @@ const GRUPOS: GrupoNavegacion[] = [
 ];
 
 const PROXIMAMENTE = [{ nombre: "Programación de pagos", icono: CalendarClock }];
-
-const OPCIONES_TAMANO: { valor: TamanoMenu; nombre: string }[] = [
-  { valor: "compacto", nombre: "Compacto" },
-  { valor: "normal", nombre: "Normal" },
-  { valor: "amplio", nombre: "Amplio" },
-];
 
 const ESTILO_TITULO_GRUPO =
   "px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase";
@@ -221,67 +213,6 @@ function Enlaces({
   );
 }
 
-function SelectorTamano({
-  tamano,
-  alCambiar,
-  refBotonMenu,
-}: {
-  tamano: TamanoMenu;
-  alCambiar: (tamano: TamanoMenu) => void;
-  /** Botón de minimizar/expandir, que recibe el foco si el selector desaparece con él dentro. */
-  refBotonMenu: RefObject<HTMLButtonElement | null>;
-}) {
-  const idEtiqueta = useId();
-  const refContenedor = useRef<HTMLDivElement>(null);
-
-  // Al minimizar con Ctrl+B el selector desaparece; si tenía el foco, se lo pasa al botón de
-  // minimizar/expandir en vez de dejarlo caer al <body>. La limpieza de un efecto de diseño corre
-  // antes de quitar el nodo del DOM, cuando todavía se sabe dónde estaba el foco.
-  useLayoutEffect(() => {
-    const contenedor = refContenedor.current;
-    // El botón es el mismo nodo con el menú expandido o minimizado.
-    const boton = refBotonMenu.current;
-    return () => {
-      if (contenedor?.contains(document.activeElement)) boton?.focus();
-    };
-  }, [refBotonMenu]);
-
-  return (
-    <div ref={refContenedor} className="shrink-0 border-t px-3 pt-3 pb-4">
-      <p id={idEtiqueta} className="mb-2 px-3 text-xs font-medium text-muted-foreground">
-        Tamaño del menú
-      </p>
-      {/* Control segmentado: una sola opción marcada (radio); las flechas recorren las opciones
-          y Espacio o Enter elige. Pulsar la opción marcada no la desmarca. */}
-      <ToggleGroup
-        type="single"
-        value={tamano}
-        onValueChange={(valor) => {
-          if (esTamanoMenu(valor)) alCambiar(valor);
-        }}
-        role="radiogroup"
-        aria-labelledby={idEtiqueta}
-        spacing={0.5}
-        size="sm"
-        className="w-full rounded-lg bg-muted p-0.5"
-      >
-        {OPCIONES_TAMANO.map(({ valor, nombre }) => (
-          <ToggleGroupItem
-            key={valor}
-            value={valor}
-            className={cn(
-              "h-7 min-w-0 flex-auto rounded-md px-1.5 text-[0.6875rem] text-foreground/80 hover:bg-background/60 hover:text-foreground",
-              "data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-soft",
-            )}
-          >
-            {nombre}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-    </div>
-  );
-}
-
 /**
  * Logo del menú: el mismo enlace en ambos estados (minimizado solo se ve el isotipo), para que
  * conserve el foco al alternar. Reproduce el `Logo` oscuro de la marca.
@@ -308,22 +239,13 @@ function LogoMenu({ minimizado }: { minimizado: boolean }) {
 
 type BarraLateralAdminProps = {
   minimizado: boolean;
-  tamano: TamanoMenu;
   /** Id del contenedor del menú, para `aria-controls` del botón de minimizar. */
   idMenu: string;
   alAlternar: () => void;
-  alCambiarTamano: (tamano: TamanoMenu) => void;
 };
 
-export function BarraLateralAdmin({
-  minimizado,
-  tamano,
-  idMenu,
-  alAlternar,
-  alCambiarTamano,
-}: BarraLateralAdminProps) {
+export function BarraLateralAdmin({ minimizado, idMenu, alAlternar }: BarraLateralAdminProps) {
   const accion = minimizado ? "Expandir menú" : "Minimizar menú";
-  const refBoton = useRef<HTMLButtonElement>(null);
 
   return (
     <div className="flex h-full flex-col">
@@ -350,7 +272,6 @@ export function BarraLateralAdmin({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              ref={refBoton}
               type="button"
               variant="ghost"
               size={minimizado ? "icon" : "icon-sm"}
@@ -384,10 +305,6 @@ export function BarraLateralAdmin({
       >
         <Enlaces minimizado={minimizado} />
       </div>
-
-      {minimizado ? null : (
-        <SelectorTamano tamano={tamano} alCambiar={alCambiarTamano} refBotonMenu={refBoton} />
-      )}
     </div>
   );
 }
