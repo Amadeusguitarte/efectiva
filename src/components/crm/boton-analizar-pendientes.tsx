@@ -6,19 +6,29 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { analizarCasosPendientes } from "@/app/admin/crm/acciones";
-import { Button } from "@/components/ui/button";
+import { cn } from "cn";
 
-/** Analiza con IA los casos que tienen mensajes nuevos desde su último análisis. */
-export function BotonAnalizarPendientes({ iaActiva }: { iaActiva: boolean }) {
+/**
+ * Analiza con IA los casos que tienen mensajes nuevos desde su último análisis. Botón discreto
+ * de la barra del pipeline: en pantallas angostas solo muestra el icono.
+ */
+export function BotonAnalizarPendientes({
+  iaActiva,
+  className,
+}: {
+  iaActiva: boolean;
+  className?: string;
+}) {
   const router = useRouter();
   const [pendiente, startTransition] = useTransition();
+  const texto = pendiente ? "Analizando…" : "Analizar pendientes con IA";
 
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
       disabled={pendiente || !iaActiva}
-      title={iaActiva ? undefined : "Activa la IA en Configuración → IA"}
+      title={iaActiva ? texto : "Activa la IA en Configuración → IA"}
+      aria-label={texto}
       onClick={() =>
         startTransition(async () => {
           const resultado = await analizarCasosPendientes();
@@ -27,9 +37,17 @@ export function BotonAnalizarPendientes({ iaActiva }: { iaActiva: boolean }) {
           router.refresh();
         })
       }
+      className={cn(
+        "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[3px] px-2 text-sm text-crm-texto-suave transition-colors hover:bg-crm-feed hover:text-crm-texto focus-visible:ring-2 focus-visible:ring-crm-seleccion focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+        className,
+      )}
     >
-      {pendiente ? <Loader2 className="animate-spin" /> : <Sparkles />}
-      {pendiente ? "Analizando…" : "Analizar con IA"}
-    </Button>
+      {pendiente ? (
+        <Loader2 className="size-4 animate-spin" aria-hidden />
+      ) : (
+        <Sparkles className="size-4" aria-hidden />
+      )}
+      <span className="hidden xl:inline">{texto}</span>
+    </button>
   );
 }

@@ -1,11 +1,21 @@
 import "server-only";
 
 import { requerirAdmin } from "@/lib/auth/sesion";
-import { filtroBusqueda } from "@/lib/busqueda";
+import { filtroBusqueda, soloCaracteresIgnorados } from "@/lib/busqueda";
+import {
+  contarSinResponder,
+  enBandeja,
+  filtrarConversaciones,
+  prefijoAutor,
+  sinResponderEnCanal,
+  type CarpetaCorreo,
+  type FiltroBandeja,
+} from "@/lib/crm/bandeja";
 import {
   VALORES_TIPO_TAREA,
   type CanalCrm,
   type CorreoAutomatico,
+  type DireccionMensaje,
   type EstadoTarea,
   type Prioridad,
   type TareaAutomatica,
@@ -19,6 +29,8 @@ import {
 } from "@/lib/crm/ajustes";
 import { claveDesdeEntorno, descifrar, hayClaveCifrado } from "@/lib/crm/cifrado";
 import { leerAnalisisGuardado, type ConfiguracionIA } from "@/lib/crm/ia";
+import { codigoCaso, diasEntre } from "@/lib/crm/linea-tiempo";
+import { resumirTexto } from "@/lib/crm/plantillas";
 import { formatearTelefono } from "@/lib/crm/telefono";
 import { createClient } from "@/lib/supabase/server";
 import type { Json, Tables } from "@/types/database";
@@ -239,14 +251,15 @@ export async function obtenerCaso(id: string) {
   if (error) throw error;
   if (!caso) return null;
 
-  const [mensajes, tareas, eventos] = await Promise.all([
+  const [mensajes, tareas, eventos, ultimoCambioEtapa] = await Promise.all([
+    // Los 500 más recientes (se devuelven en orden cronológico).
     supabase
       .from("crm_mensajes")
       .select(
-        "id, canal, direccion, asunto, contenido, estado_envio, error, enviado_at, created_at, autor:perfiles(nombre_completo, email)",
+        "id, canal, direccion, asunto, contenido, estado_envio, error, enviado_at, created_at, autor_id, autor:perfiles(nombre_completo, email)",
       )
       .eq("caso_id", id)
-      .order("id")
+      .order("id", { ascending: false })
       .limit(500),
     supabase
       .from("crm_tareas")
@@ -257,21 +270,36 @@ export async function obtenerCaso(id: string) {
       .order("created_at", { ascending: false }),
     supabase
       .from("crm_eventos")
-      .select("id, tipo, descripcion, datos, created_at, autor:perfiles(nombre_completo, email)")
+      .select("id, tipo, descripcion, created_at, autor:perfiles(nombre_completo, email)")
       .eq("caso_id", id)
       .order("id", { ascending: false })
-      .limit(100),
+      .limit(200),
+    // Desde cuándo está en la etapa actual: el último cambio de etapa (o la creación del caso).
+    supabase
+      .from("crm_eventos")
+      .select("created_at")
+      .eq("caso_id", id)
+      .eq("tipo", "etapa")
+      .order("id", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
   if (mensajes.error) throw mensajes.error;
   if (tareas.error) throw tareas.error;
   if (eventos.error) throw eventos.error;
+  if (ultimoCambioEtapa.error) throw ultimoCambioEtapa.error;
+
+  const etapaDesde = ultimoCambioEtapa.data?.created_at ?? caso.created_at;
 
   return {
     id: caso.id,
+    codigo: codigoCaso(caso.id),
     nombre: caso.nombre,
     telefono: caso.telefono,
     email: caso.email,
     etapa: mapearEtapa(caso.etapa),
+    etapaDesde,
+    diasEnEtapa: diasEntre(etapaDesde, new Date()),
     responsable: caso.responsable
       ? {
           id: caso.responsable.id,
@@ -296,7 +324,7 @@ export async function obtenerCaso(id: string) {
     analisis: leerAnalisisGuardado(caso.analisis),
     createdAt: caso.created_at,
     updatedAt: caso.updated_at,
-    mensajes: mensajes.data.map((m) => ({
+    mensajes: mensajes.data.toReversed().map((m) => ({
       id: m.id,
       canal: m.canal,
       direccion: m.direccion,
@@ -306,6 +334,10 @@ export async function obtenerCaso(id: string) {
       error: m.error,
       enviadoAt: m.enviado_at,
       createdAt: m.created_at,
+      // Momento del feed: lo entrante, cuando lo escribió el contacto; lo saliente, cuando el
+      // equipo lo escribió (aunque el worker lo envíe segundos después).
+      fecha: m.direccion === "entrada" ? (m.enviado_at ?? m.created_at) : m.created_at,
+      autorId: m.autor_id,
       autor: m.autor ? nombreDePerfil(m.autor) : null,
     })),
     tareas: tareas.data.map((t) => ({
@@ -326,6 +358,7 @@ export async function obtenerCaso(id: string) {
       tipo: e.tipo,
       descripcion: e.descripcion,
       createdAt: e.created_at,
+      fecha: e.created_at,
       autor: e.autor ? nombreDePerfil(e.autor) : null,
     })),
   };
@@ -334,80 +367,122 @@ export async function obtenerCaso(id: string) {
 export type CasoDetalle = NonNullable<Awaited<ReturnType<typeof obtenerCaso>>>;
 export type MensajeCaso = CasoDetalle["mensajes"][number];
 export type TareaCaso = CasoDetalle["tareas"][number];
+export type EventoCaso = CasoDetalle["eventos"][number];
 
 // ---------------------------------------------------------------------------
-// Bandejas (WhatsApp y correo)
+// Inbox de chat (WhatsApp) e inbox de correo
 // ---------------------------------------------------------------------------
+
+/**
+ * Conversaciones que se revisan en cada inbox y para sus contadores: las de los casos con
+ * actividad más reciente. Cada caso trae solo su último mensaje de cada canal (una fila embebida
+ * con límite 1, que usa el índice `crm_mensajes (caso_id, id)`), así la consulta queda acotada.
+ */
+const LIMITE_BANDEJA = 500;
+
+export type OpcionesBandeja = {
+  busqueda?: string;
+  filtro?: FiltroBandeja;
+  /** Solo en el inbox de correo. */
+  carpeta?: CarpetaCorreo;
+};
 
 export type ConversacionResumen = {
   casoId: string;
+  codigo: string;
   nombre: string;
+  /** Teléfono (chat) o correo (inbox de correo) del contacto. */
   contacto: string;
   etapa: { nombre: string; color: string };
+  responsableId: string | null;
   responsable: string | null;
-  ultimoMensaje: { contenido: string; direccion: "entrada" | "salida"; createdAt: string } | null;
+  ultimoMensaje: {
+    contenido: string;
+    asunto: string | null;
+    direccion: DireccionMensaje;
+    fecha: string;
+    /** «Tú», el nombre del agente o null si lo escribió el contacto. */
+    prefijo: string | null;
+  } | null;
+  ultimaDireccion: DireccionMensaje | null;
   sinResponder: boolean;
 };
 
-export async function listarConversaciones(canal: CanalCrm, busqueda?: string) {
-  await requerirAdmin();
+export async function listarConversaciones(canal: CanalCrm, opciones: OpcionesBandeja = {}) {
+  const usuario = await requerirAdmin();
+  const busqueda = opciones.busqueda ?? "";
+  if (soloCaracteresIgnorados(busqueda)) return [];
   const supabase = await createClient();
 
   let consulta = supabase
     .from("crm_casos")
     .select(
-      `id, nombre, telefono, email, ultimo_mensaje_direccion,
+      `id, nombre, telefono, email, origen, created_at,
        etapa:crm_etapas(nombre, color),
-       responsable:perfiles!crm_casos_responsable_id_fkey(nombre_completo, email)`,
+       responsable:perfiles!crm_casos_responsable_id_fkey(id, nombre_completo, email),
+       ultimo:crm_mensajes(contenido, asunto, direccion, created_at, enviado_at, autor_id,
+         autor:perfiles(nombre_completo, email))`,
     )
+    .eq("ultimo.canal", canal)
+    .order("id", { referencedTable: "ultimo", ascending: false })
+    .limit(1, { referencedTable: "ultimo" })
     .order("ultimo_mensaje_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
-    .limit(200);
-  consulta =
-    canal === "whatsapp" ? consulta.not("telefono", "is", null) : consulta.not("email", "is", null);
+    .limit(LIMITE_BANDEJA);
 
-  const filtro = filtroBusqueda(["nombre", "email", "telefono"], busqueda ?? "");
+  const filtro = filtroBusqueda(["nombre", "email", "telefono"], busqueda);
   if (filtro) consulta = consulta.or(filtro);
 
-  const [casos, ultimos] = await Promise.all([
-    consulta,
-    supabase
-      .from("crm_mensajes")
-      .select("caso_id, contenido, direccion, created_at")
-      .eq("canal", canal)
-      .order("id", { ascending: false })
-      .limit(2000),
-  ]);
-  if (casos.error) throw casos.error;
-  if (ultimos.error) throw ultimos.error;
+  const { data, error } = await consulta;
+  if (error) throw error;
 
-  const ultimoPorCaso = new Map<string, (typeof ultimos.data)[number]>();
-  for (const mensaje of ultimos.data) {
-    if (!ultimoPorCaso.has(mensaje.caso_id)) ultimoPorCaso.set(mensaje.caso_id, mensaje);
-  }
-
-  const conversaciones: ConversacionResumen[] = casos.data.map((c) => {
-    const ultimo = ultimoPorCaso.get(c.id);
-    return {
+  const conversaciones: (ConversacionResumen & { orden: string })[] = [];
+  for (const c of data) {
+    const ultimo = c.ultimo[0] ?? null;
+    if (!enBandeja(canal, { origen: c.origen, ultimoDelCanal: ultimo })) continue;
+    const fecha = ultimo
+      ? ultimo.direccion === "entrada"
+        ? (ultimo.enviado_at ?? ultimo.created_at)
+        : ultimo.created_at
+      : null;
+    conversaciones.push({
       casoId: c.id,
+      codigo: codigoCaso(c.id),
       nombre: c.nombre,
       contacto: canal === "whatsapp" ? formatearTelefono(c.telefono) : (c.email ?? ""),
       etapa: { nombre: c.etapa.nombre, color: c.etapa.color },
+      responsableId: c.responsable?.id ?? null,
       responsable: c.responsable ? nombreDePerfil(c.responsable) : null,
-      ultimoMensaje: ultimo
-        ? { contenido: ultimo.contenido, direccion: ultimo.direccion, createdAt: ultimo.created_at }
-        : null,
-      sinResponder: ultimo?.direccion === "entrada",
-    };
-  });
+      ultimoMensaje:
+        ultimo && fecha
+          ? {
+              contenido: resumirTexto(ultimo.contenido, 140),
+              asunto: ultimo.asunto,
+              direccion: ultimo.direccion,
+              fecha,
+              prefijo: prefijoAutor(
+                {
+                  direccion: ultimo.direccion,
+                  autorId: ultimo.autor_id,
+                  autor: ultimo.autor ? nombreDePerfil(ultimo.autor) : null,
+                },
+                usuario.id,
+              ),
+            }
+          : null,
+      ultimaDireccion: ultimo?.direccion ?? null,
+      sinResponder: sinResponderEnCanal(ultimo),
+      // Primero las que tienen mensajes del canal, por la fecha del último; luego las nuevas.
+      orden: fecha ?? `0${c.created_at}`,
+    });
+  }
+  conversaciones.sort((a, b) => b.orden.localeCompare(a.orden));
 
-  // Primero las que tienen mensajes; entre ellas, por fecha del último.
-  conversaciones.sort((a, b) => {
-    const fa = a.ultimoMensaje?.createdAt ?? "";
-    const fb = b.ultimoMensaje?.createdAt ?? "";
-    return fb.localeCompare(fa);
-  });
-  return conversaciones;
+  return filtrarConversaciones(conversaciones, {
+    filtro: opciones.filtro ?? "todos",
+    usuarioId: usuario.id,
+    carpeta: canal === "correo" ? (opciones.carpeta ?? "recibidos") : null,
+  }).map(({ orden: _orden, ...conversacion }) => conversacion);
 }
 
 // ---------------------------------------------------------------------------
@@ -653,41 +728,47 @@ export async function buscarClientesParaVincular(termino: string) {
 export async function obtenerResumenCrm() {
   await requerirAdmin();
   const supabase = await createClient();
-  const [abiertos, sinResponder, tareasVencidas, sinResponderChat, sinResponderCorreo] =
-    await Promise.all([
-      supabase
-        .from("crm_casos")
-        .select("id, etapa:crm_etapas!inner(cierre)", { count: "exact", head: true })
-        .is("etapa.cierre", null),
-      supabase
-        .from("crm_casos")
-        .select("id", { count: "exact", head: true })
-        .eq("ultimo_mensaje_direccion", "entrada"),
-      supabase
-        .from("crm_tareas")
-        .select("id", { count: "exact", head: true })
-        .eq("estado", "pendiente")
-        .lt("vence_at", hoyBogota()),
-      // Por bandeja: las conversaciones que aparecen en cada inbox y esperan respuesta.
-      supabase
-        .from("crm_casos")
-        .select("id", { count: "exact", head: true })
-        .eq("ultimo_mensaje_direccion", "entrada")
-        .not("telefono", "is", null),
-      supabase
-        .from("crm_casos")
-        .select("id", { count: "exact", head: true })
-        .eq("ultimo_mensaje_direccion", "entrada")
-        .not("email", "is", null),
-    ]);
+  const [abiertos, sinResponder, tareasVencidas, porCanal] = await Promise.all([
+    supabase
+      .from("crm_casos")
+      .select("id, etapa:crm_etapas!inner(cierre)", { count: "exact", head: true })
+      .is("etapa.cierre", null),
+    supabase
+      .from("crm_casos")
+      .select("id", { count: "exact", head: true })
+      .eq("ultimo_mensaje_direccion", "entrada"),
+    supabase
+      .from("crm_tareas")
+      .select("id", { count: "exact", head: true })
+      .eq("estado", "pendiente")
+      .lt("vence_at", hoyBogota()),
+    // Por inbox: el último mensaje de cada canal de las conversaciones recientes (las mismas que
+    // listan los inbox). Sin responder = ese último mensaje es de entrada.
+    supabase
+      .from("crm_casos")
+      .select("whatsapp:crm_mensajes(direccion), correo:crm_mensajes(direccion)")
+      .eq("whatsapp.canal", "whatsapp")
+      .order("id", { referencedTable: "whatsapp", ascending: false })
+      .limit(1, { referencedTable: "whatsapp" })
+      .eq("correo.canal", "correo")
+      .order("id", { referencedTable: "correo", ascending: false })
+      .limit(1, { referencedTable: "correo" })
+      .not("ultimo_mensaje_at", "is", null)
+      .order("ultimo_mensaje_at", { ascending: false })
+      .limit(LIMITE_BANDEJA),
+  ]);
   if (abiertos.error) throw abiertos.error;
   if (sinResponder.error) throw sinResponder.error;
   if (tareasVencidas.error) throw tareasVencidas.error;
+  if (porCanal.error) throw porCanal.error;
+  const pendientes = contarSinResponder(
+    porCanal.data.map((c) => ({ whatsapp: c.whatsapp[0] ?? null, correo: c.correo[0] ?? null })),
+  );
   return {
     casosAbiertos: abiertos.count ?? 0,
     sinResponder: sinResponder.count ?? 0,
     tareasVencidas: tareasVencidas.count ?? 0,
-    sinResponderChat: sinResponderChat.count ?? 0,
-    sinResponderCorreo: sinResponderCorreo.count ?? 0,
+    sinResponderChat: pendientes.chat,
+    sinResponderCorreo: pendientes.correo,
   };
 }

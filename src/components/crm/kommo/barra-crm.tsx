@@ -34,9 +34,16 @@ export function BarraCrm({
         </h1>
         {detalle ? <span className="text-sm text-crm-hora">{detalle}</span> : null}
       </div>
-      {centro ? <div className="flex min-w-0 flex-1 items-center gap-3">{centro}</div> : null}
+      {/* En el celular el centro baja a su propia fila, debajo del título y las acciones. */}
+      {centro ? (
+        <div className="order-last flex min-w-0 grow basis-full items-center gap-3 sm:order-0 sm:basis-0">
+          {centro}
+        </div>
+      ) : null}
       {acciones ? (
-        <div className={cn("flex items-center gap-2", !centro && "ml-auto")}>{acciones}</div>
+        <div className={cn("flex items-center gap-2", centro ? "ml-auto sm:ml-0" : "ml-auto")}>
+          {acciones}
+        </div>
       ) : null}
     </div>
   );

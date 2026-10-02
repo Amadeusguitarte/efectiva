@@ -1,37 +1,37 @@
-import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { FormularioCaso } from "@/components/crm/formulario-caso";
-import { EncabezadoPagina } from "@/components/plataforma/encabezado-pagina";
-import { Card, CardContent } from "@/components/ui/card";
+import { ALTO_VISTA_CRM } from "@/components/crm/kommo/barra-crm";
+import { requerirAdmin } from "@/lib/auth/sesion";
+import { ordenarEtapas } from "@/lib/crm/pipeline";
 import { obtenerEquipo, obtenerEtapas } from "@/lib/datos/crm";
+import { cn } from "cn";
 
 export const metadata: Metadata = {
   title: "Nuevo caso",
 };
 
-export default async function NuevoCasoPage() {
-  const [etapas, equipo] = await Promise.all([obtenerEtapas(), obtenerEquipo()]);
+export default async function NuevoCasoPage({ searchParams }: PageProps<"/admin/crm/nuevo">) {
+  const usuario = await requerirAdmin();
+  const [{ etapa }, etapas, equipo] = await Promise.all([
+    searchParams,
+    obtenerEtapas(),
+    obtenerEquipo(),
+  ]);
+  // «Agregar rápido» de una columna del pipeline llega con ?etapa=<id>.
+  const etapaInicial =
+    typeof etapa === "string" && etapas.some((e) => e.id === etapa) ? etapa : undefined;
+  // Como en Kommo, el responsable por defecto es quien crea el caso.
+  const responsableInicial = equipo.some((m) => m.id === usuario.id) ? usuario.id : undefined;
 
   return (
-    <>
-      <Link
-        href="/admin/crm"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        Pipeline
-      </Link>
-      <EncabezadoPagina
-        titulo="Nuevo caso"
-        descripcion="Para personas que llegan por otro medio. Las que escriben por WhatsApp o correo se crean solas."
+    <div className={cn(ALTO_VISTA_CRM, "flex flex-col")}>
+      <FormularioCaso
+        etapas={ordenarEtapas(etapas)}
+        equipo={equipo}
+        etapaInicial={etapaInicial}
+        responsableInicial={responsableInicial}
       />
-      <Card className="max-w-2xl">
-        <CardContent>
-          <FormularioCaso etapas={etapas} equipo={equipo} />
-        </CardContent>
-      </Card>
-    </>
+    </div>
   );
 }

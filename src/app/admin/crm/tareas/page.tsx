@@ -1,12 +1,12 @@
-import type { Metadata, Route } from "next";
-import Link from "next/link";
+import type { Metadata } from "next";
 
-import { FiltrosPipeline } from "@/components/crm/filtros-pipeline";
-import { FilaTarea } from "@/components/crm/tareas-caso";
-import { EncabezadoPagina } from "@/components/plataforma/encabezado-pagina";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { listarTareas, obtenerEquipo } from "@/lib/datos/crm";
+import { ALTO_VISTA_CRM, BarraCrm } from "@/components/crm/kommo/barra-crm";
+import { FiltrosTareas, type VistaTareas } from "@/components/crm/kommo/filtros-tareas";
+import { ListaTareas, type TareaConContacto } from "@/components/crm/kommo/lista-tareas";
+import { requerirAdmin } from "@/lib/auth/sesion";
+import { fechaBogota } from "@/lib/crm/plazos";
+import { formatearTelefono } from "@/lib/crm/telefono";
+import { listarCasosPipeline, listarTareas, obtenerEquipo } from "@/lib/datos/crm";
 import { cn } from "cn";
 
 export const metadata: Metadata = {
@@ -17,87 +17,76 @@ function texto(valor: string | string[] | undefined) {
   return typeof valor === "string" ? valor : undefined;
 }
 
-const VISTAS = [
-  { valor: "pendientes", etiqueta: "Pendientes" },
-  { valor: "completadas", etiqueta: "Completadas" },
-  { valor: "todas", etiqueta: "Todas" },
-] as const;
-
-function hoyBogota(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
-}
-
 export default async function TareasPage({ searchParams }: PageProps<"/admin/crm/tareas">) {
+  const usuario = await requerirAdmin();
   const parametros = await searchParams;
-  const vista = texto(parametros.vista) ?? "pendientes";
+  const vistaParam = texto(parametros.vista);
+  const vista: VistaTareas =
+    vistaParam === "completadas" || vistaParam === "todas" ? vistaParam : "pendientes";
   const responsable = texto(parametros.responsable);
 
-  const [tareas, equipo] = await Promise.all([
+  const [tareas, equipo, { casos }] = await Promise.all([
     listarTareas({
       estado:
         vista === "pendientes" ? "pendiente" : vista === "completadas" ? "completada" : undefined,
       responsable,
     }),
     obtenerEquipo(),
+    // Canal y contacto de cada caso, para el avatar y la línea del contacto.
+    listarCasosPipeline(),
   ]);
-  const vencidas = tareas.filter((t) => t.vencida).length;
-  const hoy = hoyBogota();
 
-  const enlaceVista = (valor: string) => {
-    const query = new URLSearchParams();
-    if (valor !== "pendientes") query.set("vista", valor);
-    if (responsable) query.set("responsable", responsable);
-    const cadena = query.toString();
-    return `/admin/crm/tareas${cadena ? `?${cadena}` : ""}` as Route;
-  };
+  const casosPorId = new Map(casos.map((c) => [c.id, c]));
+  const avatares = new Map(equipo.map((m) => [m.id, m.avatarUrl]));
+  const conContacto: TareaConContacto[] = tareas.map((tarea) => {
+    const caso = casosPorId.get(tarea.caso.id);
+    return {
+      ...tarea,
+      caso: {
+        ...tarea.caso,
+        canal: caso?.origen ?? null,
+        contacto: caso?.telefono ? formatearTelefono(caso.telefono) : (caso?.email ?? null),
+      },
+      responsable: tarea.responsable
+        ? { ...tarea.responsable, avatarUrl: avatares.get(tarea.responsable.id) ?? null }
+        : null,
+    };
+  });
+
+  const pendientes = tareas.filter((t) => t.estado === "pendiente").length;
+  const vencidas = tareas.filter((t) => t.vencida).length;
 
   return (
-    <>
-      <EncabezadoPagina
+    <div className={cn(ALTO_VISTA_CRM, "flex flex-col")}>
+      <BarraCrm
         titulo="Tareas"
-        descripcion={`${tareas.length} ${tareas.length === 1 ? "tarea" : "tareas"}${vencidas ? ` · ${vencidas} vencidas` : ""}`}
+        detalle={
+          <>
+            {vista === "completadas"
+              ? `${tareas.length} ${tareas.length === 1 ? "completada" : "completadas"}`
+              : `${pendientes} ${pendientes === 1 ? "pendiente" : "pendientes"}`}
+            {vencidas ? (
+              <span className="font-bold text-crm-contador">
+                {" "}
+                · {vencidas} {vencidas === 1 ? "vencida" : "vencidas"}
+              </span>
+            ) : null}
+          </>
+        }
+        centro={
+          <FiltrosTareas
+            vista={vista}
+            responsable={responsable}
+            equipo={equipo}
+            usuarioId={usuario.id}
+          />
+        }
       />
-      <div className="mb-4 flex flex-wrap gap-2">
-        {VISTAS.map((v) => (
-          <Button
-            key={v.valor}
-            asChild
-            size="sm"
-            variant={vista === v.valor ? "default" : "outline"}
-          >
-            <Link href={enlaceVista(v.valor)}>{v.etiqueta}</Link>
-          </Button>
-        ))}
+      <div className="min-h-0 flex-1 overflow-y-auto bg-crm-feed">
+        <div className="w-full px-3 py-4 md:px-6 md:py-5">
+          <ListaTareas tareas={conContacto} hoy={fechaBogota()} />
+        </div>
       </div>
-      <FiltrosPipeline equipo={equipo} conCanal={false} conBusqueda={false} />
-
-      <Card>
-        <CardContent>
-          {tareas.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">
-              No hay tareas en esta vista.
-            </p>
-          ) : (
-            <ul className="grid gap-2">
-              {tareas.map((tarea) => (
-                <FilaTarea
-                  key={tarea.id}
-                  tarea={tarea}
-                  hoy={hoy}
-                  mostrarCaso={
-                    <Link
-                      href={`/admin/crm/casos/${tarea.caso.id}` as Route}
-                      className={cn("font-medium text-primary underline-offset-4 hover:underline")}
-                    >
-                      · {tarea.caso.nombre}
-                    </Link>
-                  }
-                />
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-    </>
+    </div>
   );
 }
